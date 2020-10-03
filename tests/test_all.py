@@ -40,7 +40,13 @@ def original_txn_modified(output_txns, correctly_modified_txn_text):
     # Get correctly modified original transaction from feature file
     correctly_modified_txn = load_string(correctly_modified_txn_text)[0][0]
 
-    assert hash_entry(modified_txn, True) == hash_entry(correctly_modified_txn, True)
+    try:
+        assert hash_entry(modified_txn, True) == hash_entry(correctly_modified_txn, True)
+    except AssertionError:
+        raise AssertionError('\n'+
+            '\n; RECEIVED:\n'+printer.format_entry(modified_txn)+
+            '\n; EXPECTED:\n'+printer.format_entry(correctly_modified_txn)
+        )
 
 #
 # Scenarios/steps
