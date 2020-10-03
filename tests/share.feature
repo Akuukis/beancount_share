@@ -10,9 +10,10 @@ Feature: Share expenses with other people easily
 
         When the beancount_share plugin is executed with config:
             {
-                "tag": "#carolyn",
+                "tag": "carolyn",
                 "fraction": 0.60,
-                "meta": {"share": true}
+                "account_share": "Assets:US:Share:Carolyn",
+                "meta": {"share": True}
             }
 
         Then the original transaction should be modified:

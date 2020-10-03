@@ -59,4 +59,4 @@ def test_repeat_transfer_to_savings():
                     '{config}'))
 def recur_txn(output_txns, input_txns, config):
     print(config)
-    output_txns[:], _ = share.share(input_txns, config)
+    output_txns[:], _ = share.share(input_txns, {}, config)
