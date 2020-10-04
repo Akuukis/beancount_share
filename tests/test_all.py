@@ -22,6 +22,11 @@ def output_txns():
     return list()
 
 
+@given(parsers.parse('this config:'
+                     '{config}'))
+def config(config):
+    return config
+
 @given(parsers.parse('the following beancount transaction:'
                      '{input_txn_text}'))
 def input_txns(input_txn_text):
@@ -55,10 +60,11 @@ def original_txn_modified(output_txns, correctly_modified_txn_text):
 def test_blais_example():
     pass
 
-@when(parsers.parse('the beancount_share plugin is executed with config:'
-                    '{config}'))
-def recur_txn(output_txns, input_txns, config):
-    print(config)
+@when(parsers.parse('this transaction is processed:'
+                    '{input_txn_text}'))
+def recur_txn(output_txns, config, input_txn_text):
+    input_txns, _, _ = load_string(input_txn_text)
+    assert len(input_txns) == 1  # Only one entry in feature file example
     output_txns[:], _ = share.share(input_txns, {}, config)
 
 @scenario('share.feature', 'Readme example')
