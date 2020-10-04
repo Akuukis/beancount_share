@@ -6,56 +6,92 @@ Credits: Based on Martin Blais <blais@furius.ca> personal snippet: https://githu
 __author__ = "Akuukis"
 
 from datetime import date, datetime
+from typing import NamedTuple, Set, List, Union, Tuple
 import re
-from typing import NamedTuple, Set, List
 
 from beancount.core.inventory import Inventory
 from beancount.core.number import D, Decimal, ONE
 from beancount.core.data import Account, Entries, Posting, Open, Transaction, new_metadata
-from .common import read_config
+
+from beancount_share.common import read_config, normalized_marked_txns, marked_postings
 
 __plugins__ = ('share',)
 
 
 Config = NamedTuple(
     'Config', [
-        ('tag', str),
-        ('no_tag', str),
+        ('mark', str),
         ('open_date', date),
-        ('account_reroot', str),
-        ('account_share', str),
-        ('fraction', Decimal),
+        ('account_debtors', str),
+        ('account_creditors', str),
+        ('default_fraction', Decimal),
         ('meta', dict),
         ('quantize', Decimal),
-        ('start_date', date),
-        ('end_date', date),
     ])
 
 
-def share(entries: Entries, unused_options_map, config_string="") -> Entries:
-    new_accounts = set()
+def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
+    new_accounts: Set[Account] = set()
     new_entries: Entries = []
 
     config_obj = read_config(config_string)
     config = Config(
-                           config_obj.pop('tag'           , 'share'),
-                           config_obj.pop('no_tag'        , 'noshare'),
-        date.fromisoformat(config_obj.pop('open_date'     , '1970-01-01')),
-                           config_obj.pop('account_reroot', None),
-                           config_obj.pop('account_share' , 'Assets:Shared'),
-                     D(str(config_obj.pop('fraction'      , 0.5))),
-                           config_obj.pop('meta'          , {}),
-                     D(str(config_obj.pop('quantize'      , 0.01))),
-        date.fromisoformat(config_obj.pop('start_date'    , '1970-01-01')),
-        date.fromisoformat(config_obj.pop('end_date'      , '2100-01-01')),
+                           config_obj.pop('mark'              , 'share'),
+        date.fromisoformat(config_obj.pop('open_date'         , '1970-01-01')),
+                           config_obj.pop('account_debtors'   , 'Assets:Debtors'),
+                           config_obj.pop('account_creditors' , 'Liabilities:Creditors'),
+                     D(str(config_obj.pop('default_fraction'  , 0.5))),
+                           config_obj.pop('meta'              , {}),
+                     D(str(config_obj.pop('quantize'          , 0.01))),
     )
 
     for entry in entries:
-        if (isinstance(entry, Transaction) and
-            (config.tag in entry.tags) and
-            not (config.no_tag in entry.tags) and
-            config.start_date <= entry.date < config.end_date):
-            entry = share_expenses(entry, new_accounts, config)
+        if isinstance(entry, Transaction):
+            for tx in normalized_marked_txns(entry, config.mark):
+                new_postings = []
+                for marks, posting in marked_postings(tx, config.mark):
+                    if(marks == None):
+                        new_postings.append(posting)
+                        continue
+
+                    names_and_fractions: List[Tuple[str, Union[Decimal, float]]] = list()
+                    for mark in marks:
+                        parts = mark.split('-')
+                        account_name: str
+                        fraction: Union[Decimal, float]
+                        try:
+                            account_name = parts[0]
+                        except IndexError:
+                            raise Exception("Mark \"{mark}\" must contain account name, e.g. \"#share-bob\".")
+                        if('%' in parts[1]):
+                            try:
+                                fraction = float(parts[1].split('%')[0])
+                            except IndexError:
+                                raise Exception("Something wrong with percent fraction {parts[1]}, please use a dot, e.g. \"33.3%\".")
+                        else:
+                            try:
+                                fraction = D(str(parts[1]))
+                            except IndexError:
+                                fraction = config.default_fraction
+                        names_and_fractions.append((account_name, fraction))
+
+                total_income = sum_income(entry)
+                total_expense = sum_expense(entry)
+                if(total_income > 0 and total_expense == 0):
+                    account = config.account_debtors + ':' + account_name
+                elif(total_income > 0 and total_expense == 0):
+                    account = config.account_creditors + ':' + account_name
+                    pass
+                else:
+                    raise Exception("Plugin \"share\" doesn't work on transactions that has both income and expense: please split it up into two.")
+
+                new_entry, new_account = share_expenses(entry, config)
+
+                new_entries.append(new_entry)
+                new_accounts.add(new_account)
+                continue
+
+        # deep else:
         new_entries.append(entry)
 
     for account in sorted(new_accounts):
@@ -83,34 +119,28 @@ def group_postings(postings: List[Posting], account: Account) -> List[Posting]:
     return grouped_postings
 
 
-def share_expenses(entry: str, new_accounts: List[Account], config: Config) -> Transaction:
+def share_expenses(entry: Transaction, config: Config) -> Transaction:
     new_postings = []
     for posting in entry.postings:
         if re.match('Expenses:', posting.account):
             number = posting.units.number
-            expenses_account = (
-                re.sub(r'^Expenses\b', config.account_reroot, posting.account)
-                if config.account_reroot
-                else posting.account)
-            new_postings.append(posting._replace(
-                account=expenses_account,
-                units=posting.units._replace(
-                    number=(number * config.fraction).quantize(config.quantize))))
-            new_meta = posting.meta.copy() if posting.meta else {}
-            new_meta.update(config.meta)
-            new_postings.append(
-                Posting(
-                    config.account_share,
-                    posting.units._replace(number=(
-                        number * (ONE - config.fraction)
-                    ).quantize(config.quantize)),
-                    cost=posting.cost,
-                    price=None,
-                    flag=None,
-                    meta=new_meta))
+            adjusted_posting = posting._replace(
+                units=posting.units._replace(number=(number * config.fraction).quantize(config.quantize))
+            )
 
-            if config.account_reroot and (expenses_account not in new_accounts):
-                new_accounts.add(expenses_account)
+            shared_meta = posting.meta.copy() if posting.meta else {}
+            shared_meta.update(config.meta)
+            shared_posting = Posting(
+                config.account_share,
+                units=posting.units._replace(number=(number * (ONE - config.fraction)).quantize(config.quantize)),
+                cost=posting.cost,
+                price=None,
+                flag=None,
+                meta=shared_meta
+            )
+
+            new_postings.append(adjusted_posting, shared_posting)
+
         else:
             new_postings.append(posting)
 
