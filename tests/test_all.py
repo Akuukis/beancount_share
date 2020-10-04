@@ -51,8 +51,8 @@ def original_txn_modified(output_txns, correctly_modified_txn_text):
 #
 # Scenarios/steps
 #
-@scenario('share.feature', 'Blais example in the docs')
-def test_repeat_transfer_to_savings():
+@scenario('share.feature', 'Beancount docs example')
+def test_blais_example():
     pass
 
 @when(parsers.parse('the beancount_share plugin is executed with config:'
@@ -60,3 +60,7 @@ def test_repeat_transfer_to_savings():
 def recur_txn(output_txns, input_txns, config):
     print(config)
     output_txns[:], _ = share.share(input_txns, {}, config)
+
+@scenario('share.feature', 'Readme example')
+def test_readme_example():
+    pass

@@ -22,13 +22,38 @@ Or copy to path used for python. For example, `$HOME/.local/lib/python3.7/site-p
 
 
 
-Details
+How to Use
 ===============================================================================
 
-*TODO*
+> Please read the elaborate version at the Beancount docs: https://docs.google.com/document/d/1MjSpGoJVdgyg8rhKD9otSKo4iSD2VkSYELMWDBbsBiU/edit
 
 
+First, add a simple configuration:
 
+```
+plugin "beancount_share" "{
+    "tag": "bob",
+    "fraction": 0.50,
+    "account_share": "Assets:Debtors:Bob",
+}"
+```
+
+Then, your transactions tagged with `#Bob` like this...
+
+```
+2020-01-01 * "BarAlice" "Lunch with friend Bob" #bob
+    Assets:Cash               -10.00 USD
+    Expenses:Food:Drinks
+```
+
+will get transformed to transactions like this:
+
+```
+2020-01-01 * "BarAlice" "Lunch with friend Bob" #bob
+    Assets:Cash               -10.00 USD
+    Expenses:Food:Drinks        5.00 USD
+    Assets:Debtors:Bob          5.00 USD
+```
 
 Development
 ===============================================================================
