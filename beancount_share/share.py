@@ -70,7 +70,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
 
             # 4. Per posting, split it up based on marks.
             new_postings = []
-            for marks, posting in marked_postings(tx, config.mark):
+            for marks, posting in marked_postings(tx, config.mark, ("Income", "Expenses")):
 
                 # 4.1. or skip if not marked.
                 if(marks == None):
@@ -113,12 +113,13 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
                 # if(sanity_check_sum > total_value):
                 #     raise Exception("Your posting \"{posting}\" in transaction \"{tx}\" went above total transaction amount.")
 
+                new_postings_inner = []
                 # 5.2. Decrease current posting amount (mutate!).
                 for amount, account in todo_absolute:
                     posting = posting._replace(
                         units=posting.units._replace(number=(posting.units.number - amount).quantize(config.quantize))
                     )
-                    new_postings.append(Posting(
+                    new_postings_inner.append(Posting(
                         account,
                         units=posting.units._replace(number=(amount).quantize(config.quantize)),
                         cost=posting.cost,
@@ -129,21 +130,25 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
 
                 # 5.3. Decrease current posting amount (mutate!).
                 remainder = posting.units
+                total = D(0)
                 total_percent = sum(i for i, _ in todo_percent)
-                posting = posting._replace(
-                    units=posting.units._replace(number=D(int(remainder.number) * (1 - total_percent)).quantize(config.quantize))
-                )
                 for percent, account in todo_percent:
-                    new_postings.append(Posting(
+                    units = Amount(D(float(remainder.number) * percent).quantize(config.quantize), remainder.currency)
+                    total = total + units.number
+                    new_postings_inner.append(Posting(
                         account,
-                        units=Amount(D(float(remainder.number) * percent).quantize(config.quantize), remainder.currency),
+                        units=units,
                         cost=posting.cost,
                         price=None,
                         flag=None,
                         meta=config.meta
                     ))
+                posting = posting._replace(
+                    units=posting.units._replace(number=(remainder.number - total).quantize(config.quantize))
+                )
 
                 new_postings.append(posting)
+                new_postings.extend(new_postings_inner)
 
             new_entries.append(tx._replace(
                 postings=new_postings,
