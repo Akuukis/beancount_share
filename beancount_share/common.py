@@ -1,6 +1,7 @@
 from typing import List, Set, Union
 
 from beancount.core.data import Transaction, Posting
+from beancount.core.inventory import Inventory
 
 
 def read_config(config_string):
@@ -20,42 +21,39 @@ def read_config(config_string):
     return config_obj
 
 def extract_marks(target: Union[Transaction, Posting], mark: str) -> Set[str]:
-    if 'meta' not in target:
-        return set()
-    else:
-        return [v for k,v in target.meta.items() if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET]
+    return [v for k,v in target.meta.items() if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET]
 
 MARK_SEPERATOR = '-'
 DIGITS_SET = set(['0','1','2','3','4','5','6','7','8','9'])
-def normalized_marked_txns(txs: List[Transaction], mark: str):
+def normalize_marked_txn(tx: Transaction, mark: str):
     """
     If a transaction is marked, hoist marked tags into transation meta(s).
 
     Args:
         txs [Transaction]: transaction instances.
         mark [str]: the mark.
-    Yields:
-        iterator of normalized transactions.
+    Return:
+        Transaction with normalized marks.
     """
 
-    for tx in txs:
+    for i, tag in enumerate(tx.tags):
+        if tag == mark or tag[0:len(mark+MARK_SEPERATOR)] == mark+MARK_SEPERATOR:
+            tx = tx._replace(
+                tags=tx.tags.difference([tag])
+            )
 
-        for i, tag in enumerate(tx.tags):
-            if tag == mark or tag[0:len(mark+MARK_SEPERATOR)] == mark+MARK_SEPERATOR:
-                tx.tags.remove(tag)
+            mark_name = mark + str(900 + i)
+            tx.meta.update({mark_name: tag[len(mark+MARK_SEPERATOR):] or ''})
 
-                mark_name = mark + str(900 + i)
-                tx.meta.update({mark_name: tag[len(mark+MARK_SEPERATOR):] or ''})
+    marks = [(k,v) for k,v in tx.meta.items() if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET]
+    if(len(marks) == 1 and marks[0] != mark):
+        tx.meta.update({mark: tx.meta[marks[0][0]]})
+        del tx.meta[marks[0][0]]
 
-        marks = [(k,v) for k,v in tx.meta.items() if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET]
-        if(len(marks) == 1 and marks[0] != mark):
-            tx.meta.update({mark: tx.meta[marks[0][0]]})
-            del tx.meta[marks[0][0]]
-
-        yield tx
+    return tx
 
 
-DEFAULT_APPLICABLE_ACCOUNT_TYPES = set("Income", "Expenses", "Assets", "Liabilities", "Equity")
+DEFAULT_APPLICABLE_ACCOUNT_TYPES = set(["Income", "Expenses", "Assets", "Liabilities", "Equity"])
 
 def marked_postings(
         tx: Transaction,
@@ -92,4 +90,18 @@ def marked_postings(
             yield default_marks, posting
         else:
             yield None, posting
+
+def sum_income(tx: Transaction) -> Inventory:
+    total = Inventory()
+    for posting in tx.postings:
+        if(posting.account.split(':')[0] == "Income"):
+            total.add_position(posting)
+    return total
+
+def sum_expenses(tx: Transaction) -> Inventory:
+    total = Inventory()
+    for posting in tx.postings:
+        if(posting.account.split(':')[0] == "Expenses"):
+            total.add_position(posting)
+    return total
 
