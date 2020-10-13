@@ -1,5 +1,5 @@
 from pytest import fixture
-from pytest_bdd import scenario, given, when, then, parsers
+from pytest_bdd import given, when, then, parsers, scenarios
 
 from beancount.core.compare import hash_entry, includes_entries, excludes_entries
 from beancount.loader import load_string
@@ -9,7 +9,6 @@ from context import share
 #
 # Fixtures/steps used by all plugins
 #
-
 @fixture
 def output_txns():
     """
@@ -20,7 +19,6 @@ def output_txns():
       A reference to an empty list.
     """
     return list()
-
 
 @given(parsers.parse('this config:'
                      '{config}'))
@@ -37,7 +35,6 @@ def input_txns(input_txn_text):
 @then(parsers.parse('the original transaction should be modified:'
                     '{correctly_modified_txn_text}'))
 def original_txn_modified(output_txns, correctly_modified_txn_text):
-
     # Get modified original transaction from output of plugin
     # The modified originial transaction will be the first in the list of output transactions
     modified_txn = output_txns[0]
@@ -53,13 +50,6 @@ def original_txn_modified(output_txns, correctly_modified_txn_text):
             '\n; EXPECTED:\n'+printer.format_entry(correctly_modified_txn)
         )
 
-#
-# Scenarios/steps
-#
-@scenario('share.feature', 'Beancount docs example')
-def test_blais_example():
-    pass
-
 @when(parsers.parse('this transaction is processed:'
                     '{input_txn_text}'))
 def recur_txn(output_txns, config, input_txn_text):
@@ -67,6 +57,5 @@ def recur_txn(output_txns, config, input_txn_text):
     assert len(input_txns) == 1  # Only one entry in feature file example
     output_txns[:], _ = share.share(input_txns, {}, config)
 
-@scenario('share.feature', 'Readme example')
-def test_readme_example():
-    pass
+
+scenarios('share.feature')
