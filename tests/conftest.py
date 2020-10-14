@@ -43,7 +43,7 @@ def original_txn_modified(output_txns, correctly_modified_txn_text):
     correctly_modified_txn = load_string(correctly_modified_txn_text)[0][0]
 
     try:
-        assert hash_entry(modified_txn, True) == hash_entry(correctly_modified_txn, True)
+        assert hash_entry(modified_txn, False) == hash_entry(correctly_modified_txn, False)
     except AssertionError:
         raise AssertionError('\n'+
             '\n; RECEIVED:\n'+printer.format_entry(modified_txn)+

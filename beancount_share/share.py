@@ -87,7 +87,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
 
                     # 5.1. Apply defaults.
                     try:
-                        account = account_prefix + parts[0]
+                        account = parts[0] if ':' in parts[0] else account_prefix + parts[0]
                         new_accounts.add(account)
 
                     except IndexError:
@@ -117,15 +117,17 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
                 # 5.2. Handle absolute amounts first: mutate original posting's amount & create new postings.
                 for amount, account in todo_absolute:
                     posting = posting._replace(
-                        units=posting.units._replace(number=(posting.units.number - amount.number).quantize(config.quantize))
+                        units=posting.units._replace(number=(posting.units.number - amount.number).quantize(config.quantize)),
+                        # meta=posting.meta + {"shared": account.split(':')[-1] + " " + str(amount)}
                     )
+                    posting.meta["shared"] = account.split(':')[-1] + " " + str(amount)
                     new_postings_inner.append(Posting(
                         account,
                         units=posting.units._replace(number=(amount.number).quantize(config.quantize)),
                         cost=posting.cost,
                         price=None,
                         flag=None,
-                        meta=config.meta if config.meta else {account.split(':')[-1]: amount}
+                        meta=config.meta if config.meta else {"shared": account.split(':')[-1] + " " + str(amount)}
                     ))
 
                 # 5.3. Handle relative amounts second: mutate original posting's amount & create new postings.
@@ -141,13 +143,15 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
                         cost=posting.cost,
                         price=None,
                         flag=None,
-                        meta=config.meta if config.meta else {account.split(':')[-1]: str(percent * 100)+'%'}
+                        meta=config.meta if config.meta else {"shared": account.split(':')[-1] + " " + str(percent * 100)+'%'}
                     ))
                 posting = posting._replace(
                     units=posting.units._replace(number=(remainder.number - total).quantize(config.quantize))
                 )
 
-                new_postings.append(posting)
+                if(posting.units.number > D(0)):
+                    new_postings.append(posting)
+
                 new_postings.extend(new_postings_inner)
 
             new_entries.append(tx._replace(
