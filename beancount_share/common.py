@@ -74,7 +74,7 @@ def marked_postings(
         posting.
     """
 
-    default_marks = [(k,v) for k,v in tx.meta.items() if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET]
+    default_marks: List[str] = [v for k,v in tx.meta.items() if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET]
 
     for posting in tx.postings:
         marks = extract_marks(posting, mark)

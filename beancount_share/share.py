@@ -82,7 +82,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
                 todo_percent: List[Tuple[float, str]] = list()
                 for mark in marks:
                     print(mark)
-                    parts = mark[1].split('-')
+                    parts = mark.split('-')
                     account: str
 
                     # 5.1. Apply defaults.
@@ -96,12 +96,12 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
                     if(len(parts) > 1):
                         if('%' in parts[1]):
                             try:
-                                todo_percent.append((float(parts[1].split('%')[0]), account))
+                                todo_percent.append((float(parts[1].split('%')[0])/100, account))
                             except IndexError:
                                 raise Exception("Something wrong with percent fraction {parts[1]}, please use a dot, e.g. \"33.3%\".")
                         else:
                             try:
-                                todo_absolute.append((Amount(str(parts[1]), posting.units.currency), account))
+                                todo_absolute.append((Amount(D(parts[1]), posting.units.currency), account))
                             except IndexError:
                                 raise Exception("Something wrong with absolute fraction {parts[1]}, please use a dot, e.g. \"33.3%\".")
                     else:
@@ -114,21 +114,21 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
                 #     raise Exception("Your posting \"{posting}\" in transaction \"{tx}\" went above total transaction amount.")
 
                 new_postings_inner = []
-                # 5.2. Decrease current posting amount (mutate!).
+                # 5.2. Handle absolute amounts first: mutate original posting's amount & create new postings.
                 for amount, account in todo_absolute:
                     posting = posting._replace(
-                        units=posting.units._replace(number=(posting.units.number - amount).quantize(config.quantize))
+                        units=posting.units._replace(number=(posting.units.number - amount.number).quantize(config.quantize))
                     )
                     new_postings_inner.append(Posting(
                         account,
-                        units=posting.units._replace(number=(amount).quantize(config.quantize)),
+                        units=posting.units._replace(number=(amount.number).quantize(config.quantize)),
                         cost=posting.cost,
                         price=None,
                         flag=None,
-                        meta=config.meta
+                        meta=config.meta if config.meta else {account.split(':')[-1]: amount}
                     ))
 
-                # 5.3. Decrease current posting amount (mutate!).
+                # 5.3. Handle relative amounts second: mutate original posting's amount & create new postings.
                 remainder = posting.units
                 total = D(0)
                 total_percent = sum(i for i, _ in todo_percent)
@@ -141,7 +141,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
                         cost=posting.cost,
                         price=None,
                         flag=None,
-                        meta=config.meta
+                        meta=config.meta if config.meta else {account.split(':')[-1]: str(percent * 100)+'%'}
                     ))
                 posting = posting._replace(
                     units=posting.units._replace(number=(remainder.number - total).quantize(config.quantize))
