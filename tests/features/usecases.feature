@@ -1,10 +1,9 @@
 Feature: Share expenses with other people easily
 
-    Scenario: Readme example
+    Scenario: Example in this Readme
 
         Given this config:
-            {
-            }
+            {}
 
         When this transaction is processed:
             ;
@@ -19,7 +18,7 @@ Feature: Share expenses with other people easily
                 Expenses:Food:Drinks        5.00 USD
                 Assets:Debtors:Bob          5.00 USD
 
-    Scenario: Beancount docs example
+    Scenario: Example in Beancount docs
 
         Given this config:
             {
