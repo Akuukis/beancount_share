@@ -1,4 +1,4 @@
-from typing import List, Set, Union
+from typing import List, Set, Union, Tuple
 
 from beancount.core.data import Transaction, Posting
 from beancount.core.inventory import Inventory
@@ -20,8 +20,13 @@ def read_config(config_string):
         raise RuntimeError("Invalid plugin configuration: should be a single dict.")
     return config_obj
 
-def extract_marks(target: Union[Transaction, Posting], mark: str) -> Set[str]:
-    return [v for k,v in target.meta.items() if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET]
+def extract_marks(target: Union[Transaction, Posting], mark: str) -> Tuple[Set[str], Union[Transaction, Posting]]:
+    copy = target._replace(**target._asdict())
+    marks = [(k,v) for k,v in copy.meta.items() if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET]
+    for k,_ in marks:
+        del copy.meta[k]
+
+    return [mark for _,mark in marks], copy
 
 MARK_SEPERATOR = '-'
 DIGITS_SET = set(['0','1','2','3','4','5','6','7','8','9'])
@@ -74,10 +79,12 @@ def marked_postings(
         posting.
     """
 
-    default_marks: List[str] = [v for k,v in tx.meta.items() if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET]
+    default_mark_pairs: List[Tuple[str, str]] = [(k,v) for k,v in tx.meta.items() if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET]
+    for k,_ in default_mark_pairs:
+        del tx.meta[k]
 
-    for posting in tx.postings:
-        marks = extract_marks(posting, mark)
+    for _posting in tx.postings:
+        marks, posting = extract_marks(_posting, mark)
 
         if(posting.account.split(':')[0] not in applicable_account_types):
             yield None, posting
@@ -86,8 +93,8 @@ def marked_postings(
                 yield marks, posting
             else:
                 raise Exception("Found forbidden meta \"{marks}\" on a posting.")
-        elif(len(default_marks) > 0):
-            yield default_marks, posting
+        elif(len(default_mark_pairs) > 0):
+            yield [v for _,v in default_mark_pairs], posting
         else:
             yield None, posting
 

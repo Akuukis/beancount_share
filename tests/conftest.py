@@ -42,18 +42,30 @@ def original_txn_modified(output_txns, correctly_modified_txn_text):
     # Get correctly modified original transaction from feature file
     correctly_modified_txn = load_string(correctly_modified_txn_text)[0][0]
 
-    try:
-        assert hash_entry(modified_txn, False) == hash_entry(correctly_modified_txn, False)
-    except AssertionError:
-        raise AssertionError('\n'+
-            '\n; RECEIVED:\n'+printer.format_entry(modified_txn)+
-            '\n; EXPECTED:\n'+printer.format_entry(correctly_modified_txn)
-        )
+    # Compare strings instead of hashes because that's an easy way to exclude filename & lineno meta.
+    received_str = printer.format_entry(modified_txn)
+    expected_str = printer.format_entry(correctly_modified_txn)
+    assert received_str == expected_str
+
+    # try:
+    #     assert hash_entry(modified_txn, False) == hash_entry(correctly_modified_txn, False)
+    # except AssertionError:
+    #     if(received_str != expected_str):
+    #         raise AssertionError('\n'+
+    #             '\n; RECEIVED:\n'+received_str+
+    #             '\n; EXPECTED:\n'+expected_str
+    #         )
+    #     else:
+    #         raise AssertionError('\n'+
+    #             '\n; RECEIVED:\n'+str(modified_txn)+
+    #             '\n; EXPECTED:\n'+str(correctly_modified_txn)
+    #         )
 
 @when(parsers.parse('this transaction is processed:'
                     '{input_txn_text}'))
 def is_processed(output_txns, config, input_txn_text):
-    print(input_txn_text)
-    input_txns, _, _ = load_string(input_txn_text)
+    input_txns, errors, _ = load_string(input_txn_text)
+    for error in errors:
+        print(printer.format_error(error))
     assert len(input_txns) == 1  # Only one entry in feature file example
     output_txns[:], _ = share.share(input_txns, {}, config)

@@ -80,6 +80,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
                 # 5. Per mark, create a new posting.
                 todo_absolute: List[Tuple[Amount, str]] = list()
                 todo_percent: List[Tuple[float, str]] = list()
+                todo_absent: List[str] = list()
                 for mark in marks:
                     print(mark)
                     parts = mark.split('-')
@@ -94,18 +95,18 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
                         raise Exception("Mark \"{mark}\" must contain account name, e.g. \"#share-bob\".")
 
                     if(len(parts) > 1):
-                        if('%' in parts[1]):
+                        if('%' in parts[1] or 'p' in parts[1]):
                             try:
-                                todo_percent.append((float(parts[1].split('%')[0])/100, account))
+                                todo_percent.append((float(parts[1].split('%')[0].split('p')[0])/100, account))
                             except IndexError:
                                 raise Exception("Something wrong with percent fraction {parts[1]}, please use a dot, e.g. \"33.3%\".")
                         else:
                             try:
-                                todo_absolute.append((Amount(D(parts[1]), posting.units.currency), account))
+                                todo_absolute.append((Amount(D(parts[1]).quantize(config.quantize), posting.units.currency), account))
                             except IndexError:
                                 raise Exception("Something wrong with absolute fraction {parts[1]}, please use a dot, e.g. \"33.3%\".")
                     else:
-                        todo_percent.append((config.default_fraction, account))
+                        todo_absent.append(account)
 
                 # if(sanity_check_percent > 1):
                 #     raise Exception("Your posting \"{posting}\" in transaction \"{tx}\" went above 100%.")
@@ -118,24 +119,22 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
                 for amount, account in todo_absolute:
                     posting = posting._replace(
                         units=posting.units._replace(number=(posting.units.number - amount.number).quantize(config.quantize)),
-                        # meta=posting.meta + {"shared": account.split(':')[-1] + " " + str(amount)}
                     )
-                    posting.meta["shared"] = account.split(':')[-1] + " " + str(amount)
+                    posting.meta["shared"] = account + " " + amount.to_string()
                     new_postings_inner.append(Posting(
                         account,
                         units=posting.units._replace(number=(amount.number).quantize(config.quantize)),
                         cost=posting.cost,
                         price=None,
                         flag=None,
-                        meta=config.meta if config.meta else {"shared": account.split(':')[-1] + " " + str(amount)}
+                        meta=config.meta if config.meta else {"shared": posting.account + " " + amount.to_string()}
                     ))
 
-                # 5.3. Handle relative amounts second: mutate original posting's amount & create new postings.
+                # 5.3. Handle relative amounts second: create new postings.
                 remainder = posting.units
                 total = D(0)
-                total_percent = sum(i for i, _ in todo_percent)
                 for percent, account in todo_percent:
-                    units = Amount(D(float(remainder.number) * percent).quantize(config.quantize), remainder.currency)
+                    units = posting.units._replace(number=(D(float(remainder.number) * percent)).quantize(config.quantize))
                     total = total + units.number
                     new_postings_inner.append(Posting(
                         account,
@@ -143,14 +142,33 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
                         cost=posting.cost,
                         price=None,
                         flag=None,
-                        meta=config.meta if config.meta else {"shared": account.split(':')[-1] + " " + str(percent * 100)+'%'}
+                        meta=config.meta if config.meta else {"shared": posting.account + " " + str(int(percent * 100))+'% (' + units.to_string() + ')'}
                     ))
+                    posting.meta["shared"] = account + " " + str(int(percent * 100))+'% (' + units.to_string() + ')'
+
+                # 5.4. Handle absent amounts third: create new postings.
+                total_percent = sum(i for i, _ in todo_percent)
+                percent = (1 - total_percent) / (1 + len(todo_absent))
+                for account in todo_absent:
+                    units = posting.units._replace(number=(D(float(remainder.number) * percent)).quantize(config.quantize))
+                    total = total + units.number
+                    new_postings_inner.append(Posting(
+                        account,
+                        units=units,
+                        cost=posting.cost,
+                        price=None,
+                        flag=None,
+                        meta=config.meta if config.meta else {"shared": posting.account + " (" + str(int(percent * 100))+'%, ' + units.to_string() + ')'}
+                    ))
+                    posting.meta["shared"] = account + " (" + str(int(percent * 100))+'%, ' + units.to_string() + ')'
+
+                # 5.5. Handle original posting last (mutate!).
                 posting = posting._replace(
                     units=posting.units._replace(number=(remainder.number - total).quantize(config.quantize))
                 )
 
-                if(posting.units.number > D(0)):
-                    new_postings.append(posting)
+                # if(posting.units.number > D(0)):
+                new_postings.append(posting)
 
                 new_postings.extend(new_postings_inner)
 
