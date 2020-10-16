@@ -41,19 +41,13 @@ def normalize_marked_txn(tx: Transaction, mark: str):
         Transaction with normalized marks.
     """
 
-    for i, tag in enumerate(tx.tags):
+    for tag in tx.tags:
         if tag == mark or tag[0:len(mark+MARK_SEPERATOR)] == mark+MARK_SEPERATOR:
             tx = tx._replace(
                 tags=tx.tags.difference([tag])
             )
-
-            mark_name = mark + str(900 + i)
+            mark_name = mark + ('' if not (mark in tx.meta) else str(900 + len([k for k in tx.meta if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET])))
             tx.meta.update({mark_name: tag[len(mark+MARK_SEPERATOR):] or ''})
-
-    marks = [(k,v) for k,v in tx.meta.items() if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET]
-    if(len(marks) == 1 and marks[0] != mark):
-        tx.meta.update({mark: tx.meta[marks[0][0]]})
-        del tx.meta[marks[0][0]]
 
     return tx
 
