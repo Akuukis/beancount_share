@@ -100,7 +100,7 @@ Feature: Share a single posting to several accounts
           shared901: "Assets:Debtors:Bob 4.00 EUR"
         Assets:Debtors:Bob      8.00 EUR
           shared: "Expenses:Food:Drinks 4.00 EUR"
-          shared: "Expenses:Food:Drinks 4.00 EUR"
+          shared901: "Expenses:Food:Drinks 4.00 EUR"
 
   Scenario: Share a posting to the same account several times using relative amounts
     When this transaction is processed:
@@ -118,7 +118,7 @@ Feature: Share a single posting to several accounts
           shared901: "Assets:Debtors:Bob 40% (4.00 EUR)"
         Assets:Debtors:Bob      8.00 EUR
           shared: "Expenses:Food:Drinks 40% (4.00 EUR)"
-          shared: "Expenses:Food:Drinks 40% (4.00 EUR)"
+          shared901: "Expenses:Food:Drinks 40% (4.00 EUR)"
 
   Scenario: Share a posting to the same account several times using omitted amounts
     When this transaction is processed:
@@ -136,7 +136,7 @@ Feature: Share a single posting to several accounts
           shared901: "Assets:Debtors:Bob (33%, 3.33 EUR)"
         Assets:Debtors:Bob      6.66 EUR
           shared: "Expenses:Food:Drinks (33%, 3.33 EUR)"
-          shared: "Expenses:Food:Drinks (33%, 3.33 EUR)"
+          shared901: "Expenses:Food:Drinks (33%, 3.33 EUR)"
 
   Scenario: Share a posting to the same account several times using mixed amounts
     When this transaction is processed:
@@ -156,8 +156,8 @@ Feature: Share a single posting to several accounts
           shared902: "Assets:Debtors:Bob (30%, 1.80 EUR)"
         Assets:Debtors:Bob      8.20 EUR
           shared: "Expenses:Food:Drinks 4.00 EUR"
-          shared: "Expenses:Food:Drinks 40% (2.40 EUR)"
-          shared: "Expenses:Food:Drinks (30%, 1.80 EUR)"
+          shared901: "Expenses:Food:Drinks 40% (2.40 EUR)"
+          shared902: "Expenses:Food:Drinks (30%, 1.80 EUR)"
 
   Scenario: Throw Error if total shared absolute amount is greater than posting amount
   Scenario: Throw Error if total shared relative amount is greater than 100%

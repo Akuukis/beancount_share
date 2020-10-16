@@ -14,7 +14,7 @@ from beancount.core.number import D, Decimal, ONE
 from beancount.core.amount import Amount
 from beancount.core.data import Account, Entries, Posting, Open, Transaction, new_metadata
 
-from beancount_share.common import read_config, normalize_marked_txn, marked_postings, sum_income, sum_expenses, DIGITS_SET
+from beancount_share.common import read_config, normalize_marked_txn, marked_postings, sum_income, sum_expenses, DIGITS_SET, extract_marks
 
 __plugins__ = ('share',)
 
@@ -197,14 +197,23 @@ def group_postings(postings: List[Posting], account: Account) -> List[Posting]:
     grouped_postings = []
     share_postings = []
     share_balance = Inventory()
+    meta = dict()
     for posting in postings:
         if posting.account == account:
             share_postings.append(posting)
             share_balance.add_position(posting)
+            if(len(meta) == 0):
+                meta = posting.meta
+            else:
+                marks,_ = extract_marks(posting, "shared")
+                for mark in marks:
+                    key_name = "shared" + ('' if not ("shared" in share_postings[0].meta) else str(900 + len([k for k in share_postings[0].meta if k[0:len("shared")] == "shared" and set(k[len("shared"):]) <= DIGITS_SET])))
+                    share_postings[0].meta[key_name] = mark
         else:
             grouped_postings.append(posting)
+
     if share_postings:
         for pos in share_balance:
-            grouped_postings.append(
-                Posting(account, pos.units, pos.cost, None, None, share_postings[0].meta))
+            grouped_postings.append(Posting(account, pos.units, pos.cost, None, None, share_postings[0].meta))
+
     return grouped_postings
