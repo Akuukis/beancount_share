@@ -43,23 +43,30 @@ def original_txn_modified(output_txns, correctly_modified_txn_text):
     correctly_modified_txn = load_string(correctly_modified_txn_text)[0][0]
 
     # Compare strings instead of hashes because that's an easy way to exclude filename & lineno meta.
-    received_str = printer.format_entry(modified_txn)
-    expected_str = printer.format_entry(correctly_modified_txn)
-    assert received_str == expected_str
 
-    # try:
-    #     assert hash_entry(modified_txn, False) == hash_entry(correctly_modified_txn, False)
-    # except AssertionError:
-    #     if(received_str != expected_str):
-    #         raise AssertionError('\n'+
-    #             '\n; RECEIVED:\n'+received_str+
-    #             '\n; EXPECTED:\n'+expected_str
-    #         )
-    #     else:
-    #         raise AssertionError('\n'+
-    #             '\n; RECEIVED:\n'+str(modified_txn)+
-    #             '\n; EXPECTED:\n'+str(correctly_modified_txn)
-    #         )
+    try:
+        # Remove arbitrary meta.
+        for tx in (modified_txn, correctly_modified_txn):
+            del tx.meta['filename']
+            del tx.meta['lineno']
+            for posting in tx.postings:
+                if 'filename' in posting.meta:
+                    del posting.meta['filename']
+                if 'lineno' in posting.meta:
+                    del posting.meta['lineno']
+                if '__automatic__' in posting.meta:
+                    del posting.meta['__automatic__']
+                pass
+
+        assert hash_entry(modified_txn, False) == hash_entry(correctly_modified_txn, False)
+
+    except AssertionError:
+        print("RECEIVED:", modified_txn)
+        print("EXPECTED:", correctly_modified_txn)
+        # Rethrow as a nicely formatted diff
+        assert printer.format_entry(modified_txn) == correctly_modified_txn+'\n'
+        # But in case strings matches..
+        raise Exception("Transactions do not match, although their printed output is equal. See log output.")
 
 @when(parsers.parse('this transaction is processed:'
                     '{input_txn_text}'))
