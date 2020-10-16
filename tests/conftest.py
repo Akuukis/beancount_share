@@ -64,7 +64,7 @@ def original_txn_modified(output_txns, correctly_modified_txn_text):
         print("RECEIVED:", modified_txn)
         print("EXPECTED:", correctly_modified_txn)
         # Rethrow as a nicely formatted diff
-        assert printer.format_entry(modified_txn) == correctly_modified_txn+'\n'
+        assert printer.format_entry(modified_txn) == correctly_modified_txn_text+'\n'
         # But in case strings matches..
         raise Exception("Transactions do not match, although their printed output is equal. See log output.")
 
