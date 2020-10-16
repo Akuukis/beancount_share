@@ -98,52 +98,49 @@ Feature: Share a single posting to several accounts
         Expenses:Food:Drinks    2.00 EUR
           shared: "Assets:Debtors:Bob 4.00 EUR"
           shared901: "Assets:Debtors:Bob 4.00 EUR"
-        Assets:Debtors:Bob      4.00 EUR
+        Assets:Debtors:Bob      8.00 EUR
           shared: "Expenses:Food:Drinks 4.00 EUR"
-        Assets:Debtors:Bob      4.00 EUR
           shared: "Expenses:Food:Drinks 4.00 EUR"
 
   Scenario: Share a posting to the same account several times using relative amounts
     When this transaction is processed:
-      2020-01-01 * "BarAlice" "Beer with my guy friends"
+      2020-01-01 * "BarAlice" "Beer with my friend Bob (a lot)"
         Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
           share: "Bob-40%"
           share2: "Bob-40%"
 
     Then the original transaction should be modified:
-      2020-01-01 * "BarAlice" "Beer with my guy friends"
+      2020-01-01 * "BarAlice" "Beer with my friend Bob (a lot)"
         Assets:Cash           -10.00 EUR
         Expenses:Food:Drinks    2.00 EUR
           shared: "Assets:Debtors:Bob 40% (4.00 EUR)"
           shared901: "Assets:Debtors:Bob 40% (4.00 EUR)"
-        Assets:Debtors:Bob      4.00 EUR
+        Assets:Debtors:Bob      8.00 EUR
           shared: "Expenses:Food:Drinks 40% (4.00 EUR)"
-        Assets:Debtors:Bob      4.00 EUR
           shared: "Expenses:Food:Drinks 40% (4.00 EUR)"
 
   Scenario: Share a posting to the same account several times using omitted amounts
     When this transaction is processed:
-      2020-01-01 * "BarAlice" "Beer with my guy friends"
+      2020-01-01 * "BarAlice" "Beer with my friend Bob (a lot)"
         Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
           share: "Bob"
           share2: "Bob"
 
     Then the original transaction should be modified:
-      2020-01-01 * "BarAlice" "Beer with my guy friends"
+      2020-01-01 * "BarAlice" "Beer with my friend Bob (a lot)"
         Assets:Cash           -10.00 EUR
         Expenses:Food:Drinks    3.34 EUR
           shared: "Assets:Debtors:Bob (33%, 3.33 EUR)"
           shared901: "Assets:Debtors:Bob (33%, 3.33 EUR)"
-        Assets:Debtors:Bob      3.33 EUR
+        Assets:Debtors:Bob      6.66 EUR
           shared: "Expenses:Food:Drinks (33%, 3.33 EUR)"
-        Assets:Debtors:Bob      3.33 EUR
           shared: "Expenses:Food:Drinks (33%, 3.33 EUR)"
 
   Scenario: Share a posting to the same account several times using mixed amounts
     When this transaction is processed:
-      2020-01-01 * "BarAlice" "Beer with my guy friends"
+      2020-01-01 * "BarAlice" "Beer with my friend Bob (a lot)"
         Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
           share: "Bob-4"
@@ -151,17 +148,15 @@ Feature: Share a single posting to several accounts
           share3: "Bob"
 
     Then the original transaction should be modified:
-      2020-01-01 * "BarAlice" "Beer with my guy friends"
+      2020-01-01 * "BarAlice" "Beer with my friend Bob (a lot)"
         Assets:Cash           -10.00 EUR
         Expenses:Food:Drinks    1.80 EUR
           shared: "Assets:Debtors:Bob 4.00 EUR"
           shared901: "Assets:Debtors:Bob 40% (2.40 EUR)"
           shared902: "Assets:Debtors:Bob (30%, 1.80 EUR)"
-        Assets:Debtors:Bob      4.00 EUR
+        Assets:Debtors:Bob      8.20 EUR
           shared: "Expenses:Food:Drinks 4.00 EUR"
-        Assets:Debtors:Bob      2.40 EUR
           shared: "Expenses:Food:Drinks 40% (2.40 EUR)"
-        Assets:Debtors:Bob      1.80 EUR
           shared: "Expenses:Food:Drinks (30%, 1.80 EUR)"
 
   Scenario: Throw Error if total shared absolute amount is greater than posting amount

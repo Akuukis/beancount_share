@@ -175,6 +175,9 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
 
                 new_postings.extend(new_postings_inner)
 
+            for account in new_accounts:
+                new_postings = group_postings(new_postings, account)
+
             new_entries.append(tx._replace(
                 postings=new_postings,
             ))
@@ -205,34 +208,3 @@ def group_postings(postings: List[Posting], account: Account) -> List[Posting]:
             grouped_postings.append(
                 Posting(account, pos.units, pos.cost, None, None, share_postings[0].meta))
     return grouped_postings
-
-
-def share_expenses(tx: Transaction, config: Config) -> Transaction:
-    new_postings = []
-    for posting in tx.postings:
-        if re.match('Expenses:', posting.account):
-            number = posting.units.number
-            adjusted_posting = posting._replace(
-                units=posting.units._replace(number=(number * config.default_fraction).quantize(config.quantize))
-            )
-
-            shared_meta = posting.meta.copy() if posting.meta else {}
-            shared_meta.update(config.meta)
-            shared_posting = Posting(
-                config.account_share,
-                units=posting.units._replace(number=(number * (ONE - config.default_fraction)).quantize(config.quantize)),
-                cost=posting.cost,
-                price=None,
-                flag=None,
-                meta=shared_meta
-            )
-
-            new_postings.append(adjusted_posting, shared_posting)
-
-        else:
-            new_postings.append(posting)
-
-    # For the share account, group the postings together.
-    grouped_postings = group_postings(new_postings, config.account_share)
-
-    return entry._replace(postings=grouped_postings)
