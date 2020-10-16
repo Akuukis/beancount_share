@@ -14,7 +14,7 @@ from beancount.core.number import D, Decimal, ONE
 from beancount.core.amount import Amount
 from beancount.core.data import Account, Entries, Posting, Open, Transaction, new_metadata
 
-from beancount_share.common import read_config, normalize_marked_txn, marked_postings, sum_income, sum_expenses
+from beancount_share.common import read_config, normalize_marked_txn, marked_postings, sum_income, sum_expenses, DIGITS_SET
 
 __plugins__ = ('share',)
 
@@ -120,7 +120,8 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
                     posting = posting._replace(
                         units=posting.units._replace(number=(posting.units.number - amount.number).quantize(config.quantize)),
                     )
-                    posting.meta["shared"] = account + " " + amount.to_string()
+                    key_name = "shared" + ('' if not ("shared" in posting.meta) else str(900 + len([k for k in posting.meta if k[0:len("shared")] == "shared" and set(k[len("shared"):]) <= DIGITS_SET])))
+                    posting.meta[key_name] = account + " " + amount.to_string()
                     new_postings_inner.append(Posting(
                         account,
                         units=posting.units._replace(number=(amount.number).quantize(config.quantize)),
@@ -144,7 +145,8 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
                         flag=None,
                         meta=config.meta if config.meta else {"shared": posting.account + " " + str(int(percent * 100))+'% (' + units.to_string() + ')'}
                     ))
-                    posting.meta["shared"] = account + " " + str(int(percent * 100))+'% (' + units.to_string() + ')'
+                    key_name = "shared" + ('' if not ("shared" in posting.meta) else str(900 + len([k for k in posting.meta if k[0:len("shared")] == "shared" and set(k[len("shared"):]) <= DIGITS_SET])))
+                    posting.meta[key_name] = account + " " + str(int(percent * 100))+'% (' + units.to_string() + ')'
 
                 # 5.4. Handle absent amounts third: create new postings.
                 total_percent = sum(i for i, _ in todo_percent)
@@ -160,7 +162,8 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Entries:
                         flag=None,
                         meta=config.meta if config.meta else {"shared": posting.account + " (" + str(int(percent * 100))+'%, ' + units.to_string() + ')'}
                     ))
-                    posting.meta["shared"] = account + " (" + str(int(percent * 100))+'%, ' + units.to_string() + ')'
+                    key_name = "shared" + ('' if not ("shared" in posting.meta) else str(900 + len([k for k in posting.meta if k[0:len("shared")] == "shared" and set(k[len("shared"):]) <= DIGITS_SET])))
+                    posting.meta[key_name] = account + " (" + str(int(percent * 100))+'%, ' + units.to_string() + ')'
 
                 # 5.5. Handle original posting last (mutate!).
                 posting = posting._replace(
