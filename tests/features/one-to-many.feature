@@ -158,7 +158,3 @@ Feature: Share a single posting to several accounts
           shared: "Expenses:Food:Drinks 4.00 EUR"
           shared901: "Expenses:Food:Drinks 40% (2.40 EUR)"
           shared902: "Expenses:Food:Drinks (30%, 1.80 EUR)"
-
-  Scenario: Throw Error if total shared absolute amount is greater than posting amount
-  Scenario: Throw Error if total shared relative amount is greater than 100%
-  Scenario: Throw Error if further sharing a posting whose amount is reduced to zero after sharing absolute amounts

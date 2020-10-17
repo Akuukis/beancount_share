@@ -59,5 +59,3 @@ Feature: Share several postings to several accounts
         Assets:Debtors:Bob        9.00 EUR
           shared: "Expenses:Food:Lunch 7.00 EUR"
           shared901: "Expenses:Food:Drinks (50%, 2.00 EUR)"
-
-  Scenario: Throw Error if sharing both Expense and Income postings

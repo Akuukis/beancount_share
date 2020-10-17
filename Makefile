@@ -2,7 +2,7 @@ init:
 	pip3 install -r requirements.txt
 
 test:
-	pytest --maxfail=1 --verbose
+	pytest --maxfail=1 --verbose -vv
 
 clean:
 	rm -rf build/* dist/*
