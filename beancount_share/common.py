@@ -1,9 +1,9 @@
 from typing import List, Set, Union, Tuple
-from copy import deepcopy
 
 from beancount.core.data import Transaction, Posting
 from beancount.core.inventory import Inventory
 
+import beancount_share.metaset as metaset
 
 def read_config(config_string):
     """
@@ -21,18 +21,8 @@ def read_config(config_string):
         raise RuntimeError("Invalid plugin configuration: should be a single dict.")
     return config_obj
 
-def extract_marks(target: Union[Transaction, Posting], mark: str) -> Tuple[Set[str], Union[Transaction, Posting]]:
-    copy = deepcopy(target)
-
-    marks = [(k,v) for k,v in copy.meta.items() if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET]
-    for k,_ in marks:
-        del copy.meta[k]
-
-    return [mark for _,mark in marks], copy
-
 MARK_SEPERATOR = '-'
-DIGITS_SET = set(['0','1','2','3','4','5','6','7','8','9'])
-def normalize_marked_txn(_tx: Transaction, mark_name: str):
+def normalize_marked_txn(tx: Transaction, mark_name: str):
     """
     If a transaction is marked, hoist marked tags into transation meta(s).
 
@@ -42,16 +32,12 @@ def normalize_marked_txn(_tx: Transaction, mark_name: str):
     Return:
         Transaction with normalized marks.
     """
-
-    tx = deepcopy(_tx)
-
     for tag in tx.tags:
         if tag == mark_name or tag[0:len(mark_name+MARK_SEPERATOR)] == mark_name+MARK_SEPERATOR:
             tx = tx._replace(
-                tags=tx.tags.difference([tag])
+                tags=tx.tags.difference([tag]),
+                meta=metaset.add(tx.meta, mark_name, tag[len(mark_name+MARK_SEPERATOR):] or ''),
             )
-            mark_name = mark_name + ('' if not (mark_name in tx.meta) else str(900 + len([k for k in tx.meta if k[0:len(mark_name)] == mark_name and set(k[len(mark_name):]) <= DIGITS_SET])))
-            tx.meta.update({mark_name: tag[len(mark_name+MARK_SEPERATOR):] or ''})
 
     return tx
 
@@ -78,22 +64,26 @@ def marked_postings(
         original posting.
     """
 
-    default_mark_pairs: List[Tuple[str, str]] = [(k,v) for k,v in tx.meta.items() if k[0:len(mark_name)] == mark_name and set(k[len(mark_name):]) <= DIGITS_SET]
-    for k,_ in default_mark_pairs:
-        del tx.meta[k]
+    default_marks = metaset.get(tx.meta, mark_name)
+    tx = tx._replace(
+        meta=metaset.clear(tx.meta, mark_name)
+    )
 
     for _posting in tx.postings:
-        marks, posting = extract_marks(_posting, mark_name)
+        marks = metaset.get(_posting.meta, mark_name)
+        posting = _posting._replace(
+            meta=metaset.clear(_posting.meta, mark_name)
+        )
 
         if(len(marks) > 0):
-            yield marks, posting, _posting
-        elif(len(default_mark_pairs) > 0):
+            yield marks, posting, _posting, tx
+        elif(len(default_marks) > 0):
             if(posting.account.split(':')[0] not in applicable_account_types):
-                yield None, posting, _posting
+                yield None, posting, _posting, tx
             else:
-                yield [v for _,v in default_mark_pairs], posting, _posting
+                yield default_marks, posting, _posting, tx
         else:
-            yield None, posting, _posting
+            yield None, posting, _posting, tx
 
 def sum_income(tx: Transaction) -> Inventory:
     total = Inventory()

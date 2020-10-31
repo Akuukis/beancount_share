@@ -15,7 +15,8 @@ from beancount.core.number import D, Decimal, ONE
 from beancount.core.amount import Amount
 from beancount.core.data import Account, Entries, Posting, Open, Transaction, new_metadata
 
-from beancount_share.common import read_config, normalize_marked_txn, marked_postings, sum_income, sum_expenses, DIGITS_SET, extract_marks
+from beancount_share.common import read_config, normalize_marked_txn, marked_postings, sum_income, sum_expenses
+import beancount_share.metaset as metaset
 
 __plugins__ = ('share',)
 
@@ -80,7 +81,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
 
         # 4. Per posting, split it up based on marks.
         new_postings = []
-        for marks, posting, orig in marked_postings(tx, config.mark_name, ("Income", "Expenses")):
+        for marks, posting, orig, tx_clean in marked_postings(tx, config.mark_name, ("Income", "Expenses")):
 
             # 4.1. or skip if not marked.
             if(marks == None):
@@ -191,8 +192,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
                     units=posting.units._replace(number=(posting.units.number - amount.number).quantize(config.quantize)),
                 )
                 if config.meta_name is not None:
-                    key_name = config.meta_name + ('' if not (config.meta_name in posting.meta) else str(900 + len([k for k in posting.meta if k[0:len(config.meta_name)] == config.meta_name and set(k[len(config.meta_name):]) <= DIGITS_SET])))
-                    posting.meta[key_name] = account + " " + amount.to_string()
+                    posting = posting._replace(meta=metaset.add(posting.meta, config.meta_name, account + " " + amount.to_string()))
                 new_postings_inner.append(Posting(
                     account,
                     units=posting.units._replace(number=(amount.number).quantize(config.quantize)),
@@ -217,8 +217,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
                     meta={} if config.meta_name is None else {config.meta_name: posting.account + " " + str(int(percent * 100))+'% (' + units.to_string() + ')'}
                 ))
                 if config.meta_name is not None:
-                    key_name = config.meta_name + ('' if not (config.meta_name in posting.meta) else str(900 + len([k for k in posting.meta if k[0:len(config.meta_name)] == config.meta_name and set(k[len(config.meta_name):]) <= DIGITS_SET])))
-                    posting.meta[key_name] = account + " " + str(int(percent * 100))+'% (' + units.to_string() + ')'
+                    posting = posting._replace(meta=metaset.add(posting.meta, config.meta_name, account + " " + str(int(percent * 100))+'% (' + units.to_string() + ')'))
 
             # 5.4. Handle absent amounts third: create new postings.
             total_percent = sum(i for i, _ in todo_percent)
@@ -235,8 +234,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
                     meta={} if config.meta_name is None else {config.meta_name: posting.account + " (" + str(int(percent * 100))+'%, ' + units.to_string() + ')'}
                 ))
                 if config.meta_name is not None:
-                    key_name = config.meta_name + ('' if not (config.meta_name in posting.meta) else str(900 + len([k for k in posting.meta if k[0:len(config.meta_name)] == config.meta_name and set(k[len(config.meta_name):]) <= DIGITS_SET])))
-                    posting.meta[key_name] = account + " (" + str(int(percent * 100))+'%, ' + units.to_string() + ')'
+                    posting = posting._replace(meta=metaset.add(posting.meta, config.meta_name, account + " (" + str(int(percent * 100))+'%, ' + units.to_string() + ')'))
 
             # 5.5. Handle original posting last (mutate!).
             posting = posting._replace(
@@ -251,7 +249,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
         for account in new_accounts:
             new_postings = group_postings(new_postings, account, config.meta_name)
 
-        new_entries.append(tx._replace(
+        new_entries.append(tx_clean._replace(
             postings=new_postings,
         ))
 
@@ -276,10 +274,8 @@ def group_postings(postings: List[Posting], account: Account, meta_name: Union[s
             if(len(meta) == 0):
                 meta = posting.meta
             elif(meta_name is not None):
-                marks,_ = extract_marks(posting, meta_name)
-                for mark in marks:
-                    key_name = meta_name + ('' if not (meta_name in share_postings[0].meta) else str(900 + len([k for k in share_postings[0].meta if k[0:len(meta_name)] == meta_name and set(k[len(meta_name):]) <= DIGITS_SET])))
-                    share_postings[0].meta[key_name] = mark
+                for mark in metaset.get(posting.meta, meta_name):
+                    share_postings[0] = share_postings[0]._replace(meta=metaset.add(share_postings[0].meta, meta_name, mark))
         else:
             grouped_postings.append(posting)
 
