@@ -32,13 +32,13 @@ def extract_marks(target: Union[Transaction, Posting], mark: str) -> Tuple[Set[s
 
 MARK_SEPERATOR = '-'
 DIGITS_SET = set(['0','1','2','3','4','5','6','7','8','9'])
-def normalize_marked_txn(_tx: Transaction, mark: str):
+def normalize_marked_txn(_tx: Transaction, mark_name: str):
     """
     If a transaction is marked, hoist marked tags into transation meta(s).
 
     Args:
         txs [Transaction]: transaction instances.
-        mark [str]: the mark.
+        mark_name [str]: the mark.
     Return:
         Transaction with normalized marks.
     """
@@ -46,12 +46,12 @@ def normalize_marked_txn(_tx: Transaction, mark: str):
     tx = deepcopy(_tx)
 
     for tag in tx.tags:
-        if tag == mark or tag[0:len(mark+MARK_SEPERATOR)] == mark+MARK_SEPERATOR:
+        if tag == mark_name or tag[0:len(mark_name+MARK_SEPERATOR)] == mark_name+MARK_SEPERATOR:
             tx = tx._replace(
                 tags=tx.tags.difference([tag])
             )
-            mark_name = mark + ('' if not (mark in tx.meta) else str(900 + len([k for k in tx.meta if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET])))
-            tx.meta.update({mark_name: tag[len(mark+MARK_SEPERATOR):] or ''})
+            mark_name = mark_name + ('' if not (mark_name in tx.meta) else str(900 + len([k for k in tx.meta if k[0:len(mark_name)] == mark_name and set(k[len(mark_name):]) <= DIGITS_SET])))
+            tx.meta.update({mark_name: tag[len(mark_name+MARK_SEPERATOR):] or ''})
 
     return tx
 
@@ -60,7 +60,7 @@ DEFAULT_APPLICABLE_ACCOUNT_TYPES = set(["Income", "Expenses", "Assets", "Liabili
 
 def marked_postings(
         tx: Transaction,
-        mark: str,
+        mark_name: str,
         applicable_account_types: Set[str] = DEFAULT_APPLICABLE_ACCOUNT_TYPES,
         allow_posting_level_mark: bool = True
     ):
@@ -69,7 +69,7 @@ def marked_postings(
 
     Args:
         tx [Transaction]: transaction instance.
-        mark [str]: the mark.
+        mark_name [str]: the mark.
         applicable_account_types [Set[str]]: set of account types that must be considered, defaults to all five.
         allow_posting_level_mark [bool]: set to False if posting-level marks should raise error instead.
     Yields:
@@ -78,12 +78,12 @@ def marked_postings(
         original posting.
     """
 
-    default_mark_pairs: List[Tuple[str, str]] = [(k,v) for k,v in tx.meta.items() if k[0:len(mark)] == mark and set(k[len(mark):]) <= DIGITS_SET]
+    default_mark_pairs: List[Tuple[str, str]] = [(k,v) for k,v in tx.meta.items() if k[0:len(mark_name)] == mark_name and set(k[len(mark_name):]) <= DIGITS_SET]
     for k,_ in default_mark_pairs:
         del tx.meta[k]
 
     for _posting in tx.postings:
-        marks, posting = extract_marks(_posting, mark)
+        marks, posting = extract_marks(_posting, mark_name)
 
         if(len(marks) > 0):
             yield marks, posting, _posting

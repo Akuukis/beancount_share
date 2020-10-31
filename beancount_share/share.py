@@ -22,7 +22,7 @@ __plugins__ = ('share',)
 # pylint: disable=raising-non-exception
 
 Config = NamedTuple('Config', [
-    ('mark', str),
+    ('mark_name', str),
     ('meta_name', Union[str, None]),
     ('account_debtors', str),
     ('account_creditors', str),
@@ -42,7 +42,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
     config_obj = read_config(config_string)
     raw_open_date = config_obj.pop('open_date', '1970-01-01')
     config = Config(
-        config_obj.pop('mark'              , 'share'),
+        config_obj.pop('mark_name'         , 'share'),
         config_obj.pop('meta_name'         , 'shared'),
         config_obj.pop('account_debtors'   , 'Assets:Debtors'),
         config_obj.pop('account_creditors' , 'Liabilities:Creditors'),
@@ -56,7 +56,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
             continue
 
         # 2. Normalize marks.
-        tx = normalize_marked_txn(entry, config.mark)
+        tx = normalize_marked_txn(entry, config.mark_name)
 
         # 3. Determine whenever this is debtor or creditor transactions.
         account_prefix: str
@@ -80,7 +80,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
 
         # 4. Per posting, split it up based on marks.
         new_postings = []
-        for marks, posting, orig in marked_postings(tx, config.mark, ("Income", "Expenses")):
+        for marks, posting, orig in marked_postings(tx, config.mark_name, ("Income", "Expenses")):
 
             # 4.1. or skip if not marked.
             if(marks == None):
