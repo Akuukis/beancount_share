@@ -31,17 +31,13 @@ How to Use
 First, add a simple configuration:
 
 ```
-plugin "beancount_share" "{
-    "tag": "bob",
-    "fraction": 0.50,
-    "account_share": "Assets:Debtors:Bob",
-}"
+plugin "beancount_share" "{}"
 ```
 
-Then, your transactions tagged with `#Bob` like this...
+Then, tag your transaction with `#share-Bob` like this...
 
 ```
-2020-01-01 * "BarAlice" "Lunch with friend Bob" #bob
+2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-Bob
     Assets:Cash               -10.00 USD
     Expenses:Food:Drinks
 ```
@@ -49,10 +45,12 @@ Then, your transactions tagged with `#Bob` like this...
 will get transformed to transactions like this:
 
 ```
-2020-01-01 * "BarAlice" "Lunch with friend Bob" #bob
+2020-01-01 * "BarAlice" "Lunch with friend Bob"
     Assets:Cash               -10.00 USD
     Expenses:Food:Drinks        5.00 USD
+        shared: "Assets:Debtors:Bob (50%, 5.00 USD)"
     Assets:Debtors:Bob          5.00 USD
+        shared: "Expenses:Food:Drinks (50%, 5.00 USD)"
 ```
 
 Development
