@@ -21,16 +21,14 @@ __plugins__ = ('share',)
 
 # pylint: disable=raising-non-exception
 
-Config = NamedTuple(
-    'Config', [
-        ('mark', str),
-        ('open_date', date),
-        ('account_debtors', str),
-        ('account_creditors', str),
-        ('default_fraction', float),
-        ('meta', dict),
-        ('quantize', Decimal),
-    ])
+Config = NamedTuple('Config', [
+    ('mark', str),
+    ('meta_name', Union[str, None]),
+    ('account_debtors', str),
+    ('account_creditors', str),
+    ('quantize', Decimal),
+    ('open_date', Union[date, None]),
+])
 
 PluginShareParseError = namedtuple('LoadError', 'source message entry')
 
@@ -38,18 +36,18 @@ PluginShareParseError = namedtuple('LoadError', 'source message entry')
 def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Entries, List[Exception]]:
     new_accounts: Set[Account] = set()
     new_entries: Entries = []
-    errors: List[Exception] = []
+    errors: List[PluginShareParseError] = []
 
     # 1. Parse config
     config_obj = read_config(config_string)
+    raw_open_date = config_obj.pop('open_date', '1970-01-01')
     config = Config(
-                           config_obj.pop('mark'              , 'share'),
-        date.fromisoformat(config_obj.pop('open_date'         , '1970-01-01')),
-                           config_obj.pop('account_debtors'   , 'Assets:Debtors'),
-                           config_obj.pop('account_creditors' , 'Liabilities:Creditors'),
-                     float(config_obj.pop('default_fraction'  , 0.5)),
-                           config_obj.pop('meta'              , {}),
-                     D(str(config_obj.pop('quantize'          , 0.01))),
+        config_obj.pop('mark'              , 'share'),
+        config_obj.pop('meta_name'         , 'shared'),
+        config_obj.pop('account_debtors'   , 'Assets:Debtors'),
+        config_obj.pop('account_creditors' , 'Liabilities:Creditors'),
+        D(str(config_obj.pop('quantize'    , 0.01))),
+        None if raw_open_date is None else date.fromisoformat(raw_open_date),
     )
 
     for entry in entries:
@@ -192,15 +190,16 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
                 posting = posting._replace(
                     units=posting.units._replace(number=(posting.units.number - amount.number).quantize(config.quantize)),
                 )
-                key_name = "shared" + ('' if not ("shared" in posting.meta) else str(900 + len([k for k in posting.meta if k[0:len("shared")] == "shared" and set(k[len("shared"):]) <= DIGITS_SET])))
-                posting.meta[key_name] = account + " " + amount.to_string()
+                if config.meta_name is not None:
+                    key_name = config.meta_name + ('' if not (config.meta_name in posting.meta) else str(900 + len([k for k in posting.meta if k[0:len(config.meta_name)] == config.meta_name and set(k[len(config.meta_name):]) <= DIGITS_SET])))
+                    posting.meta[key_name] = account + " " + amount.to_string()
                 new_postings_inner.append(Posting(
                     account,
                     units=posting.units._replace(number=(amount.number).quantize(config.quantize)),
                     cost=posting.cost,
                     price=None,
                     flag=None,
-                    meta=config.meta if config.meta else {"shared": posting.account + " " + amount.to_string()}
+                    meta={} if config.meta_name is None else {config.meta_name: posting.account + " " + amount.to_string()}
                 ))
 
             # 5.3. Handle relative amounts second: create new postings.
@@ -215,10 +214,11 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
                     cost=posting.cost,
                     price=None,
                     flag=None,
-                    meta=config.meta if config.meta else {"shared": posting.account + " " + str(int(percent * 100))+'% (' + units.to_string() + ')'}
+                    meta={} if config.meta_name is None else {config.meta_name: posting.account + " " + str(int(percent * 100))+'% (' + units.to_string() + ')'}
                 ))
-                key_name = "shared" + ('' if not ("shared" in posting.meta) else str(900 + len([k for k in posting.meta if k[0:len("shared")] == "shared" and set(k[len("shared"):]) <= DIGITS_SET])))
-                posting.meta[key_name] = account + " " + str(int(percent * 100))+'% (' + units.to_string() + ')'
+                if config.meta_name is not None:
+                    key_name = config.meta_name + ('' if not (config.meta_name in posting.meta) else str(900 + len([k for k in posting.meta if k[0:len(config.meta_name)] == config.meta_name and set(k[len(config.meta_name):]) <= DIGITS_SET])))
+                    posting.meta[key_name] = account + " " + str(int(percent * 100))+'% (' + units.to_string() + ')'
 
             # 5.4. Handle absent amounts third: create new postings.
             total_percent = sum(i for i, _ in todo_percent)
@@ -232,10 +232,11 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
                     cost=posting.cost,
                     price=None,
                     flag=None,
-                    meta=config.meta if config.meta else {"shared": posting.account + " (" + str(int(percent * 100))+'%, ' + units.to_string() + ')'}
+                    meta={} if config.meta_name is None else {config.meta_name: posting.account + " (" + str(int(percent * 100))+'%, ' + units.to_string() + ')'}
                 ))
-                key_name = "shared" + ('' if not ("shared" in posting.meta) else str(900 + len([k for k in posting.meta if k[0:len("shared")] == "shared" and set(k[len("shared"):]) <= DIGITS_SET])))
-                posting.meta[key_name] = account + " (" + str(int(percent * 100))+'%, ' + units.to_string() + ')'
+                if config.meta_name is not None:
+                    key_name = config.meta_name + ('' if not (config.meta_name in posting.meta) else str(900 + len([k for k in posting.meta if k[0:len(config.meta_name)] == config.meta_name and set(k[len(config.meta_name):]) <= DIGITS_SET])))
+                    posting.meta[key_name] = account + " (" + str(int(percent * 100))+'%, ' + units.to_string() + ')'
 
             # 5.5. Handle original posting last (mutate!).
             posting = posting._replace(
@@ -248,7 +249,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
             new_postings.extend(new_postings_inner)
 
         for account in new_accounts:
-            new_postings = group_postings(new_postings, account)
+            new_postings = group_postings(new_postings, account, config.meta_name)
 
         new_entries.append(tx._replace(
             postings=new_postings,
@@ -263,7 +264,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
     return new_entries, errors
 
 
-def group_postings(postings: List[Posting], account: Account) -> List[Posting]:
+def group_postings(postings: List[Posting], account: Account, meta_name: Union[str, None]) -> List[Posting]:
     grouped_postings = []
     share_postings = []
     share_balance = Inventory()
@@ -274,10 +275,10 @@ def group_postings(postings: List[Posting], account: Account) -> List[Posting]:
             share_balance.add_position(posting)
             if(len(meta) == 0):
                 meta = posting.meta
-            else:
-                marks,_ = extract_marks(posting, "shared")
+            elif(meta_name is not None):
+                marks,_ = extract_marks(posting, meta_name)
                 for mark in marks:
-                    key_name = "shared" + ('' if not ("shared" in share_postings[0].meta) else str(900 + len([k for k in share_postings[0].meta if k[0:len("shared")] == "shared" and set(k[len("shared"):]) <= DIGITS_SET])))
+                    key_name = meta_name + ('' if not (meta_name in share_postings[0].meta) else str(900 + len([k for k in share_postings[0].meta if k[0:len(meta_name)] == meta_name and set(k[len(meta_name):]) <= DIGITS_SET])))
                     share_postings[0].meta[key_name] = mark
         else:
             grouped_postings.append(posting)
