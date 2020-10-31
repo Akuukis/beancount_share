@@ -7,16 +7,16 @@ Feature: Configure plugin behavior
 
     When this transaction is processed:
       2020-01-01 * "BarAlice" "Lunch with friend Bob" #asdf-Bob
-        Assets:Cash               -10.00 USD
+        Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
 
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
-        Assets:Cash               -10.00 USD
-        Expenses:Food:Drinks        5.00 USD
-          shared: "Assets:Debtors:Bob (50%, 5.00 USD)"
-        Assets:Debtors:Bob          5.00 USD
-          shared: "Expenses:Food:Drinks (50%, 5.00 USD)"
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks        5.00 EUR
+          shared: "Assets:Debtors:Bob (50%, 5.00 EUR)"
+        Assets:Debtors:Bob          5.00 EUR
+          shared: "Expenses:Food:Drinks (50%, 5.00 EUR)"
 
   Scenario: Rename mark at meta
 
@@ -26,16 +26,16 @@ Feature: Configure plugin behavior
     When this transaction is processed:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
         asdf: "Bob"
-        Assets:Cash               -10.00 USD
+        Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
 
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
-        Assets:Cash               -10.00 USD
-        Expenses:Food:Drinks        5.00 USD
-          shared: "Assets:Debtors:Bob (50%, 5.00 USD)"
-        Assets:Debtors:Bob          5.00 USD
-          shared: "Expenses:Food:Drinks (50%, 5.00 USD)"
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks        5.00 EUR
+          shared: "Assets:Debtors:Bob (50%, 5.00 EUR)"
+        Assets:Debtors:Bob          5.00 EUR
+          shared: "Expenses:Food:Drinks (50%, 5.00 EUR)"
 
 
 
@@ -46,14 +46,14 @@ Feature: Configure plugin behavior
 
     When this transaction is processed:
       2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-Bob
-        Assets:Cash               -10.00 USD
+        Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
 
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
-        Assets:Cash               -10.00 USD
-        Expenses:Food:Drinks        5.00 USD
-        Assets:Debtors:Bob          5.00 USD
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks        5.00 EUR
+        Assets:Debtors:Bob          5.00 EUR
 
   Scenario: Rename added meta
 
@@ -62,13 +62,50 @@ Feature: Configure plugin behavior
 
     When this transaction is processed:
       2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-Bob
-        Assets:Cash               -10.00 USD
+        Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
 
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
-        Assets:Cash               -10.00 USD
-        Expenses:Food:Drinks        5.00 USD
-          asdf: "Assets:Debtors:Bob (50%, 5.00 USD)"
-        Assets:Debtors:Bob          5.00 USD
-          asdf: "Expenses:Food:Drinks (50%, 5.00 USD)"
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks        5.00 EUR
+          asdf: "Assets:Debtors:Bob (50%, 5.00 EUR)"
+        Assets:Debtors:Bob          5.00 EUR
+          asdf: "Expenses:Food:Drinks (50%, 5.00 EUR)"
+
+  Scenario: Rename debtor account
+
+    Given this config:
+      {"account_debtors": "Assets:EUR:Debtors"}
+
+    When this transaction is processed:
+      2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-Bob
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks
+
+    Then the original transaction should be modified:
+      2020-01-01 * "BarAlice" "Lunch with friend Bob"
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks        5.00 EUR
+          shared: "Assets:EUR:Debtors:Bob (50%, 5.00 EUR)"
+        Assets:EUR:Debtors:Bob      5.00 EUR
+          shared: "Expenses:Food:Drinks (50%, 5.00 EUR)"
+
+  Scenario: Rename debtor account
+
+    Given this config:
+      {"account_creditors": "Liabilities:EUR:Creditors"}
+
+    When this transaction is processed:
+      2020-01-01 * "BarAlice" "Found change on floor with Bob"
+        Assets:Cash                10.00 EUR
+        Income:Random
+          share: "Bob-40%"
+
+    Then the original transaction should be modified:
+      2020-01-01 * "BarAlice" "Found change on floor with Bob"
+        Assets:Cash                       10.00 EUR
+        Income:Random                     -6.00 EUR
+          shared: "Liabilities:EUR:Creditors:Bob 40% (-4.00 EUR)"
+        Liabilities:EUR:Creditors:Bob     -4.00 EUR
+          shared: "Income:Random 40% (-4.00 EUR)"
