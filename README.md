@@ -9,13 +9,19 @@ Share
 A beancount plugin to share expenses among multiple partners within one ledger.
 
 `#share` plugin uses tag syntax to add info to the transaction:
-    basic: share expense with another partner 50%-50% `#share-Bob`
-    amount: share a specific sum of expense with another partner. `#share-Bob-7`
-    percentage: share a specific percentage of expense with another partner `#share-Bob-40%`
-    many: share expense with multiple partners `#share-Bob #share-Charlie`
-    complex: share complex transactions using meta
+- basic: share expense with another partner 50%-50% - simply use `#share-Bob`
+- amount: share a specific sum of expense with another partner - use `#share-Bob-7`
+- percentage: share a specific percentage of expense with another partner - use `#share-Bob-40p`
+- many: share expense with multiple partners - use `#share-Bob #share-Charlie`
 
 This plugin is very powerful and most probably can deal with all of your sharing needs.
+
+
+
+
+
+
+
 
 Install
 ===============================================================================
@@ -26,27 +32,43 @@ pip3 install beancount_share --user
 
 Or copy to path used for python. For example, `$HOME/.local/lib/python3.7/site-packages/beancount_share/*` would do on Debian. If in doubt, look where `beancount` folder is and copy next to it.
 
+
+
+
+
+
+
+
 Setup
 ===============================================================================
 
-> Please read the elaborate version at the Beancount docs: https://docs.google.com/document/d/1MjSpGoJVdgyg8rhKD9otSKo4iSD2VkSYELMWDBbsBiU/edit
+> Please read the elaborate version at the [Beancount docs](https://docs.google.com/document/d/1MjSpGoJVdgyg8rhKD9otSKo4iSD2VkSYELMWDBbsBiU/edit).
 
-Add a simple configuration:
+Add the plugin like this:
 
 ```
 plugin "beancount_share" "{}"
 ```
 
-- all new names you add in the tag after `#share-` will be automatically added to your debtors list **!** what about Caps?
-- **!** creditors or debtors?
+Done. If you want to use custom configuration (read below), then you put it inside those `{}` brackets.
 
-Details: basic `#share-Bob`
+
+
+
+
+
+
+
+Usecase: split expense with "Bob" equally.
 ===============================================================================
-> share expense with another partner 50%-50%
+> TL;DR: use `#share-Bob` tag.
 
 If you, Alice, have had a nice evening out and are in a equal relationship with Bob, you most probably will use the basic share tag that includes only a name: `#share-Bob`.
 
 The default share tag splits transaction into 2 transactions equally to you and your debtor.
+
+
+
 
 How to use
 -----------------------------------------------------------------------
@@ -59,11 +81,14 @@ Tag your transaction simply with a tag + name, like `#share-Bob`:
     Expenses:Food:Drinks
 ```
 
+
+
+
 What happens
 -----------------------------------------------------------------------
 
 The transaction will get transformed into 2 transactions each with 50% of the sum.
-**!** The name you enter in the tag, will become your debtor if this is an expense and creditor, if income:
+The name in the tag will become your debtor (or creditor, if splitting an income).
 
 ```
 2020-01-01 * "BarAlice" "Lunch with friend Bob"
@@ -74,14 +99,24 @@ The transaction will get transformed into 2 transactions each with 50% of the su
         shared: "Expenses:Food:Drinks (50%, 5.00 USD)"
 ```
 
-Details: amount `#share-Bob-7`
+
+
+
+
+
+
+
+Usecase: split expense with "Bob" for a specific amount.
 ===============================================================================
-> share a specific sum of expense with another partner.
+> TL;DR: use `#share-Bob-7` tag.
 
 If you, Alice, have had a nice evening out, and payed also for your friends dinner and he promised to pay you back later, he became your debtor.
 You should tag the expense with his name + the sum he owes you: `#share-Bob-7`.
 
 The amount share tag splits transaction into 2 transactions where your debtors' part is the amount specified and yours - all the rest.
+
+
+
 
 How to use
 -----------------------------------------------------------------------
@@ -93,6 +128,10 @@ Tag your transaction with a tag + name + debtors' amount:
     Assets:Cash               -10.00 USD
     Expenses:Food:Drinks
 ```
+
+
+
+
 What happens
 -----------------------------------------------------------------------
 
@@ -107,9 +146,16 @@ The transaction will get transformed into 2 transactions. Your debtors' transact
         shared: "Expenses:Food:Drinks 7.00 EUR"
 ```
 
-Details: percentage `#share-Bob-40%`
+
+
+
+
+
+
+
+Usecase: split expense with "Bob" for a specific percentage.
 ===============================================================================
-> share a specific percentage of expense with another partner.
+> TL;DR: use  `#share-Bob-40%` tag.
 
 For example, you, Alice, have had a few drinks with a friend Bob and payed also for his beer.
 You both don't remember all the pennies who owns who, but you know that you drank a bit more.
@@ -118,18 +164,24 @@ You should tag the expense with his name + the percentage of expense he owes you
 
 The percentage share tag splits transaction into 2 transactions where your debtors part is the percentage specified and yours - all the rest.
 
+
+
+
 How to use
 -----------------------------------------------------------------------
 
 Tag your transaction with a tag + name + debtors' percentage:
 
 ```
-2020-01-01 * "BarAlice" "Drinks with friend Bob" #share-Bob-40%
+2020-01-01 * "BarAlice" "Drinks with friend Bob" #share-Bob-40p
     Assets:Cash               -10.00 USD
     Expenses:Food:Drinks
 ```
 
-Do not forget to add % sign, otherwise it will be considered an amount tag!
+Note: do not forget to add `p` (a **p**ercent, but beancount doesn't allow "%" sign itself), otherwise it will be considered an amount tag!
+
+
+
 
 What happens
 -----------------------------------------------------------------------
@@ -145,14 +197,24 @@ The transaction will get transformed into 2 transactions. Your debtors' transact
         shared: "Expenses:Food:Drinks 40% (4.00 EUR)"
 ```
 
-Details: many `#share-Bob #share-Charlie`
+
+
+
+
+
+
+
+Usecase: split expense with multiple people - "Bob" and "Charlie" - equally.
 ===============================================================================
-> share expense with multiple partners
+> Tl;DR: use `#share-Bob #share-Charlie` tag.
 
 If you, Alice, had a few drinks with 2 of your guy friends Bob and Charlie.
 You payed for their beer and they became your debtors.
 You all like the Mediterrian style of money splitting, so you spilt the evening expenses equally.
 You should add 2 tags to the expense, each with a friend's name: `#share-Bob` and `#share-Charlie`.
+
+
+
 
 How to use
 -----------------------------------------------------------------------
@@ -164,6 +226,9 @@ Tag your transaction with a tag for each person you want to split the transactio
     Assets:Cash               -10.00 USD
     Expenses:Food:Drinks
 ```
+
+
+
 
 What happens
 -----------------------------------------------------------------------
@@ -183,9 +248,16 @@ The amount will be spilt equally between all of you.
         shared: "Expenses:Food:Drinks (33%, 3.33 EUR)"
 ```
 
-Details: complex
+
+
+
+
+
+
+
+Usecase: something complex.
 ===============================================================================
-> share complex transactions using meta
+> TL;DR: nope, read on.
 
 In reality, tags are only the shortcuts of share plugin to make your life easier.
 You can always write out the full transaction and sometimes it does make more sense.
@@ -198,6 +270,9 @@ Bob will give you back an amount of his beer, Charlie is a getleman and wants to
 
 This leaves us with 3 different metas to our transaction:
 `Bob-4`, `Charlie-50%`, `David`
+
+
+
 
 How to use
 -----------------------------------------------------------------------
@@ -215,6 +290,9 @@ Instead of adding tags, you might want to explicitly add meta to the transaction
 
 To add many share metas, add a number for each `share` and add amont, percentage or nothing the same as with tags.
 
+
+
+
 What happens
 -----------------------------------------------------------------------
 
@@ -224,9 +302,9 @@ The transaction will get transformed into as many transactions as metas you have
 
 The amount will be spilt by these rules in this order:
 1. All absolute amounts are taken away;
-1. The amount that is left now is 100%;
-1. All specified percentages are taken away;
-1. Everything that is left with default metas is split equally;
+2. The amount that is left now is 100%;
+3. All specified percentages are taken away;
+4. Everything that is left with default metas is split equally;
 
 ```
 2020-01-01 * "BarAlice" "Beer with my many friends"
@@ -249,7 +327,26 @@ Tests
 If the examples above do not suffice your needs, check out the tests.
 They consist of human-readable examples for more specific cases.
 
+
+
+
+
+
+
+
 Development
 ===============================================================================
 
 Please see Makefile and inline comments.
+
+
+
+
+
+
+
+
+
+- all new names you add in the tag after `#share-` will be automatically added to your debtors list **!** what about Caps?
+- **!** creditors or debtors?
+
