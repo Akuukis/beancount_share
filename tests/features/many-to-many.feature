@@ -7,6 +7,7 @@ Feature: Share several postings to several accounts
       2020-01-01 open Assets:Cash
       2020-01-01 open Expenses:Food:Drinks
       2020-01-01 open Expenses:Food:Lunch
+      2020-01-01 open Expenses:Food:Snacks
 
   Scenario: Share all applicable postings to several overlapping accounts
     When this transaction is processed:

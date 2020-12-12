@@ -6,6 +6,7 @@ Feature: Share a single posting to single account
     Given the following setup:
       2020-01-01 open Assets:Cash
       2020-01-01 open Expenses:Food:Drinks
+      2020-01-01 open Expenses:Food:Snacks
       2020-01-01 open Income:RandomVeryVeryLong
 
   Scenario: Partially share sole Expense posting using absolute amount

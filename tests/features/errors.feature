@@ -5,6 +5,7 @@ Feature: Report meaningful errors
       {}
     Given the following setup:
       2020-01-01 open Assets:Cash
+      2020-01-01 open Assets:Safe
       2020-01-01 open Expenses:Food:Drinks
       2020-01-01 open Expenses:Food:Lunch
       2020-01-01 open Income:Random
@@ -67,6 +68,16 @@ Feature: Report meaningful errors
     Then the original transaction should not be modified
     And should produce plugin error:
         It doesn't make sense to further auto-split when amount is already split for full 100%.
+
+  Scenario: Throw Error if sharing mark has no effect
+    When this transaction is processed:
+      2020-01-01 * "BarAlice" "Lunch with my guy friends" #share-Bob
+        Assets:Cash           -15.00 EUR
+        Assets:Safe
+
+    Then the original transaction should not be modified
+    And should produce plugin error:
+        Plugin "share" doesn't work on transactions that has nor income and expense.
 
   Scenario: Throw Error if sharing both Expense and Income postings
     When this transaction is processed:

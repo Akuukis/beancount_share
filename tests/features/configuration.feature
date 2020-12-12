@@ -130,6 +130,13 @@ Feature: Configure plugin behavior
         Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
 
-    Then should not error
+    Then the original transaction should be modified:
+      2020-01-01 * "BarAlice" "Lunch with friend Bob"
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks        5.00 EUR
+          shared: "Assets:Debtors:Bob (50%, 5.00 EUR)"
+        Assets:Debtors:Bob          5.00 EUR
+          shared: "Expenses:Food:Drinks (50%, 5.00 EUR)"
+
     Then should produce beancount error:
       Invalid reference to unknown account 'Assets:Debtors:Bob'

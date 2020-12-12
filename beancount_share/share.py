@@ -66,7 +66,17 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
         total_expenses = sum_expenses(tx)
         total_value: Amount
 
-        # 3.1. If tx nor postings are not marked, bail early.
+        # 3.1. If transaction is marked but has no effect on any postings, error.
+        if(total_expenses.is_empty() and total_income.is_empty() and metaset.get(tx.meta, config.mark_name)):
+            errors.append(PluginShareParseError(
+                new_metadata(entry.meta['filename'], entry.meta['lineno']),
+                "Plugin \"share\" doesn't work on transactions that has nor income and expense.",
+                entry,
+            ))
+            new_entries.append(entry)
+            continue
+
+        # 3.2. If tx nor postings are not marked, bail early.
         if(len([elem for elem,_,_,_ in marked_postings_result if elem != None]) == 0):
             new_entries.append(entry)
             continue
