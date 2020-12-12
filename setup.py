@@ -10,7 +10,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='beancount_share',
-    version='0.0.1',
+    version='0.1.0',
     description='Plugin for Beancount to share expenses.',
 
     long_description=long_description,
@@ -19,7 +19,7 @@ setup(
     author='Kalvis \'Akuukis\' Kalnins',
     author_email='akuukis@kalvis.lv',
     download_url='https://pypi.python.org/pypi/beancount_share',
-    license='GNU GPLv3',
+    license='GNU AGPLv3',
     package_data={'beancount_share': ['../README.md']},
     package_dir={'beancount_share': 'beancount_share'},
     packages=['beancount_share'],
