@@ -15,6 +15,7 @@ Feature: Share a single posting to single account
         Expenses:Food:Drinks
           share: "Assets:Debtors:Bob-4"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
         Assets:Cash           -10.00 EUR
@@ -30,6 +31,7 @@ Feature: Share a single posting to single account
         Expenses:Food:Drinks
           share: "Bob-4"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
         Assets:Cash           -10.00 EUR
@@ -45,6 +47,7 @@ Feature: Share a single posting to single account
         Expenses:Food:Drinks
           share: "Bob-40%"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
         Assets:Cash           -10.00 EUR
@@ -60,6 +63,7 @@ Feature: Share a single posting to single account
         Expenses:Food:Drinks
           share: "Bob"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
         Assets:Cash               -10.00 EUR
@@ -75,6 +79,7 @@ Feature: Share a single posting to single account
         Expenses:Food:Drinks
           share: "Bob-10"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
         Assets:Cash               -10.00 EUR
@@ -90,6 +95,7 @@ Feature: Share a single posting to single account
         Expenses:Food:Drinks
           share: "Bob-100%"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
         Assets:Cash               -10.00 EUR
@@ -105,6 +111,7 @@ Feature: Share a single posting to single account
         Income:RandomVeryVeryLong
           share: "Bob-40%"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Found change on floor with Bob"
         Assets:Cash                10.00 EUR
@@ -121,6 +128,7 @@ Feature: Share a single posting to single account
         Expenses:Food:Drinks
           share: "Assets:Debtors:Bob-4"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
         Assets:Cash               -12.00 EUR

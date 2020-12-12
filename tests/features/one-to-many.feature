@@ -15,6 +15,7 @@ Feature: Share a single posting to several accounts
           share: "Bob-4"
           share2: "Charlie-4"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Beer with my guy friends"
         Assets:Cash               -10.00 EUR
@@ -34,6 +35,7 @@ Feature: Share a single posting to several accounts
           share: "Bob-40%"
           share2: "Charlie-40%"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Beer with my guy friends"
         Assets:Cash               -10.00 EUR
@@ -53,6 +55,7 @@ Feature: Share a single posting to several accounts
           share: "Bob"
           share2: "Charlie"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Beer with my guy friends"
         Assets:Cash               -10.00 EUR
@@ -73,6 +76,7 @@ Feature: Share a single posting to several accounts
           share2: "Charlie-40%"
           share3: "David"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Beer with my guy friends"
         Assets:Cash             -10.00 EUR
@@ -95,6 +99,7 @@ Feature: Share a single posting to several accounts
           share: "Bob-4"
           share2: "Bob-4"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Beer with my guy friends"
         Assets:Cash           -10.00 EUR
@@ -113,6 +118,7 @@ Feature: Share a single posting to several accounts
           share: "Bob-40%"
           share2: "Bob-40%"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Beer with my friend Bob (a lot)"
         Assets:Cash           -10.00 EUR
@@ -131,6 +137,7 @@ Feature: Share a single posting to several accounts
           share: "Bob"
           share2: "Bob"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Beer with my friend Bob (a lot)"
         Assets:Cash           -10.00 EUR
@@ -150,6 +157,7 @@ Feature: Share a single posting to several accounts
           share2: "Bob-40%"
           share3: "Bob"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Beer with my friend Bob (a lot)"
         Assets:Cash           -10.00 EUR

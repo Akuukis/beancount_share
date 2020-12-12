@@ -19,6 +19,7 @@ Feature: Share several postings to several accounts
           share: "Bob"
           share2: "Charlie-3"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with my guy friends"
         Assets:Cash             -24.00 EUR
@@ -47,6 +48,7 @@ Feature: Share several postings to several accounts
           share: "Bob"
           share2: "Charlie-3"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with my guy friends"
         Assets:Cash             -25.00 EUR

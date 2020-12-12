@@ -18,7 +18,7 @@ from beancount.core.data import Account, Entries, Posting, Open, Transaction, ne
 from beancount_share.common import read_config, normalize_marked_txn, marked_postings, sum_income, sum_expenses
 import beancount_share.metaset as metaset
 
-__plugins__ = ('share',)
+__plugins__ = ['share']
 
 # pylint: disable=raising-non-exception
 
@@ -58,12 +58,19 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
 
         # 2. Normalize marks.
         tx = normalize_marked_txn(entry, config.mark_name)
+        marked_postings_result = list(marked_postings(tx, config.mark_name, ("Income", "Expenses")))
 
         # 3. Determine whenever this is debtor or creditor transactions.
         account_prefix: str
         total_income = sum_income(tx)
         total_expenses = sum_expenses(tx)
         total_value: Amount
+
+        # 3.1. If tx nor postings are not marked, bail early.
+        if(len([elem for elem,_,_,_ in marked_postings_result if elem != None]) == 0):
+            new_entries.append(entry)
+            continue
+
         if(not total_expenses.is_empty() and total_income.is_empty()):
             account_prefix = config.account_debtors + ':'
             total_value = total_expenses.get_currency_units(tx.postings[0].units.currency)
@@ -81,7 +88,7 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
 
         # 4. Per posting, split it up based on marks.
         new_postings = []
-        for marks, posting, orig, tx_clean in marked_postings(tx, config.mark_name, ("Income", "Expenses")):
+        for marks, posting, orig, tx_clean in marked_postings_result:
 
             # 4.1. or skip if not marked.
             if(marks == None):

@@ -62,6 +62,7 @@ def marked_postings(
         list of mark values or None.
         posting.
         original posting.
+        original transaction.
     """
 
     default_marks = metaset.get(tx.meta, mark_name)

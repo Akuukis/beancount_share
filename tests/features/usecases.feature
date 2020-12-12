@@ -15,6 +15,7 @@ Feature: Share expenses with other people easily
         Assets:Cash               -10.00 USD
         Expenses:Food:Drinks
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
         Assets:Cash               -10.00 USD
@@ -39,6 +40,7 @@ Feature: Share expenses with other people easily
         Liabilities:US:Amex:BlueCash  -32.66 USD
         Expenses:Food:Grocery
 
+    Then should not error
     Then the original transaction should be modified:
       2018-12-23 * "WHISK" "Water refill"
         Liabilities:US:Amex:BlueCash  -32.66 USD

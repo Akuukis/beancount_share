@@ -16,6 +16,7 @@ Feature: Configure plugin behavior
         Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
         Assets:Cash               -10.00 EUR
@@ -35,6 +36,7 @@ Feature: Configure plugin behavior
         Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
         Assets:Cash               -10.00 EUR
@@ -53,6 +55,7 @@ Feature: Configure plugin behavior
         Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
         Assets:Cash               -10.00 EUR
@@ -69,6 +72,7 @@ Feature: Configure plugin behavior
         Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
         Assets:Cash               -10.00 EUR
@@ -87,6 +91,7 @@ Feature: Configure plugin behavior
         Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
         Assets:Cash               -10.00 EUR
@@ -106,6 +111,7 @@ Feature: Configure plugin behavior
         Income:Random
           share: "Bob-40%"
 
+    Then should not error
     Then the original transaction should be modified:
       2020-01-01 * "BarAlice" "Found change on floor with Bob"
         Assets:Cash                       10.00 EUR
@@ -124,5 +130,6 @@ Feature: Configure plugin behavior
         Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
 
+    Then should not error
     Then should produce beancount error:
       Invalid reference to unknown account 'Assets:Debtors:Bob'

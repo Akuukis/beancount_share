@@ -15,9 +15,6 @@ def strip_flaky_meta(transaction: Transaction):
         transaction.postings[j] = transaction.postings[j]._replace(meta=metaset.discard(transaction.postings[j].meta, 'filename'))
         transaction.postings[j] = transaction.postings[j]._replace(meta=metaset.discard(transaction.postings[j].meta, 'lineno'))
         transaction.postings[j] = transaction.postings[j]._replace(meta=metaset.discard(transaction.postings[j].meta, '__automatic__'))
-        print(j)
-        print(posting)
-        print(transaction.postings[j])
     # transaction._replace(postings=new_postings)
 
     return transaction
@@ -88,14 +85,14 @@ def original_txn_modified(output_txns, errors, correctly_modified_txn_text):
     # Get correctly modified original transaction from feature file
     correctly_modified_txn = strip_flaky_meta(load_string(correctly_modified_txn_text)[0][-1])
 
-    print(printer.format_entry(modified_txn))
-    print(printer.format_entry(correctly_modified_txn))
+    print(" ; RECEIVED:\n", printer.format_entry(modified_txn))
+    print(" ; EXPECTED:\n", printer.format_entry(correctly_modified_txn))
 
     # Compare strings instead of hashes because that's an easy way to exclude filename & lineno meta.
 
     try:
-        print("RECEIVED:", modified_txn)
-        print("EXPECTED:", correctly_modified_txn)
+        print("RECEIVED:\n", modified_txn)
+        print("EXPECTED:\n", correctly_modified_txn)
         assert hash_entry(modified_txn) == hash_entry(correctly_modified_txn)
 
     except AssertionError:
@@ -119,6 +116,10 @@ def tx_not_modified(input_txns, output_txns):
         raise Exception("Transactions do not match, although their printed output is equal. See log output.")
 
 
+
+@then(parsers.parse('should not error'))
+def added_error(errors):
+    assert len(errors) == 0
 
 @then(parsers.parse('should produce plugin error:\n'
                     '{exception_text}'))

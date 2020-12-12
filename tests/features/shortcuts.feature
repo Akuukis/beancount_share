@@ -14,6 +14,7 @@ Feature: Shortcuts for marking postings
                 Assets:Cash               -10.00 USD
                 Expenses:Food:Drinks
 
+        Then should not error
         Then the original transaction should be modified:
             2020-01-01 * "BarAlice" "Lunch with friend Bob"
                 Assets:Cash               -10.00 USD
@@ -30,6 +31,7 @@ Feature: Shortcuts for marking postings
                 Expenses:Food:Drinks
                     share: "Bob-4"
 
+        Then should not error
         Then the original transaction should be modified:
             2020-01-01 * "BarAlice" "Lunch with friend Bob"
                 Assets:Cash               -10.00 USD
@@ -44,6 +46,7 @@ Feature: Shortcuts for marking postings
                 Assets:Cash               -10.00 USD
                 Expenses:Food:Drinks
 
+        Then should not error
         Then the original transaction should be modified:
             2020-01-01 * "BarAlice" "Lunch with friend Bob"
                 Assets:Cash               -10.00 USD
