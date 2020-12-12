@@ -24,7 +24,7 @@ Feature: Share expenses with other people easily
         Assets:Debtors:Bob          5.00 USD
           shared: "Expenses:Food:Drinks (50%, 5.00 USD)"
 
-  Scenario: Example in Beancount docs
+  Scenario: Carolyn example in Beancount docs
 
     Given this config:
       {
@@ -48,3 +48,29 @@ Feature: Share expenses with other people easily
           share: "Assets:US:Share:Carolyn 40% (13.06 USD)"
         Assets:US:Share:Carolyn        13.06 USD
           share: "Expenses:Food:Grocery 40% (13.06 USD)"
+
+  Scenario: Kyle example in Beancount docs
+
+    Given this config:
+      {
+        'account_debtors': 'Expenses',
+        'meta_name': 'share',
+      }
+    Given the following setup:
+      2018-01-01 open Liabilities:US:Amex:BlueCash
+      2018-01-01 open Expenses:Pharmacy
+
+    When this transaction is processed:
+      2019-02-01 * "AMAZON.COM" "MERCHANDISE - Diapers size 4 for Kyle" #share-Kyle-100p
+        Liabilities:US:Amex:BlueCash  -49.99 USD
+        Expenses:Pharmacy
+
+
+    Then should not error
+    Then the original transaction should be modified:
+      2019-02-01 * "AMAZON.COM" "MERCHANDISE - Diapers size 4 for Kyle"
+        Liabilities:US:Amex:BlueCash  -49.99 USD
+        Expenses:Pharmacy               0.00 USD
+          share: "Expenses:Kyle 100% (49.99 USD)"
+        Expenses:Kyle                   49.99 USD
+          share: "Expenses:Pharmacy 100% (49.99 USD)"
