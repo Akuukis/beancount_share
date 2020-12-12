@@ -1,8 +1,11 @@
 Feature: Shortcuts for marking postings
 
-    Background: Simple case without config
+    Background: default
         Given this config:
             {}
+        Given the following setup:
+            2020-01-01 open Assets:Cash
+            2020-01-01 open Expenses:Food:Drinks
 
     Scenario: Transaction meta translates to meta for every applicable posting without their own share- meta (positive case)
         When this transaction is processed:

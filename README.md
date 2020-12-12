@@ -321,8 +321,37 @@ The amount will be spilt by these rules in this order:
         shared: "Expenses:Food:Drinks (25%, 1.50 EUR)"
 ```
 
+
+
+
+Configuration
+===============================================================================
+
+
+This is the default configuration in full. Providing it equals to providing no configuration at all.
+
+```
+plugin "beancount_share" "{
+    mark_name: "share",
+    meta_name: "shared",
+    account_debtors: "Assets:Debtors",
+    account_creditors: "Liabilities:Creditors",
+    open_date: "1970-01-01",
+    quantize: "0.01"
+}"
+```
+
+Note that `meta_name` and `open_date` may also be set to `None` - former to disable informative meta generation, and latter to disable `open` entry creation.
+
+
+
+
+
+
+
+
 Tests
------------------------------------------------------------------------
+===============================================================================
 
 If the examples above do not suffice your needs, check out the tests.
 They consist of human-readable examples for more specific cases.

@@ -1,8 +1,13 @@
 Feature: Report meaningful errors
 
-  Background: Simple case without config
+  Background: default
     Given this config:
       {}
+    Given the following setup:
+      2020-01-01 open Assets:Cash
+      2020-01-01 open Expenses:Food:Drinks
+      2020-01-01 open Expenses:Food:Lunch
+      2020-01-01 open Income:Random
 
   Scenario: Throw Error if sharing a non-applicable posting (Assets, Liabilities or Equity)
     When this transaction is processed:
@@ -12,7 +17,7 @@ Feature: Report meaningful errors
         Expenses:Food:Drinks
 
     Then the original transaction should not be modified
-    And should produce error:
+    And should produce plugin error:
       Mark "share" doesn't make sense on a "Assets" type posting.
 
   Scenario: Throw Error if total shared absolute amount is greater than posting amount
@@ -24,7 +29,7 @@ Feature: Report meaningful errors
           share2: "Charlie-6"
 
     Then the original transaction should not be modified
-    And should produce error:
+    And should produce plugin error:
         The posting can't share more than it's absolute value
 
   Scenario: Throw Error if total shared relative amount is greater than 100%
@@ -36,7 +41,7 @@ Feature: Report meaningful errors
           share2: "Charlie-60%"
 
     Then the original transaction should not be modified
-    And should produce error:
+    And should produce plugin error:
         The posting can't share more percent than 100%.
 
   Scenario: Throw Error if further sharing a posting whose amount is reduced to zero after sharing absolute amounts
@@ -48,7 +53,7 @@ Feature: Report meaningful errors
           share2: "Charlie-42%"
 
     Then the original transaction should not be modified
-    And should produce error:
+    And should produce plugin error:
         It doesn't make sense to split a remaining amount of zero.
 
   Scenario: Throw Error if further sharing a posting whose amount is already shared by 100%
@@ -60,7 +65,7 @@ Feature: Report meaningful errors
           share2: "Charlie"
 
     Then the original transaction should not be modified
-    And should produce error:
+    And should produce plugin error:
         It doesn't make sense to further auto-split when amount is already split for full 100%.
 
   Scenario: Throw Error if sharing both Expense and Income postings
@@ -73,5 +78,5 @@ Feature: Report meaningful errors
           share: "Bob"
 
     Then the original transaction should not be modified
-    And should produce error:
+    And should produce plugin error:
         Plugin "share" doesn't work on transactions that has both income and expense: please split it up into two transactions instead.

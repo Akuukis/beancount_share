@@ -253,11 +253,11 @@ def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Ent
             postings=new_postings,
         ))
 
-
-    for account in sorted(new_accounts):
-        new_meta = new_metadata(entries[0].meta['filename'], 0)
-        open_entry = Open(new_meta, config.open_date, account, None, None)
-        new_entries.append(open_entry)
+    if(config.open_date != None):
+        for account in sorted(new_accounts):
+            new_meta = new_metadata(entries[0].meta['filename'], 0)
+            open_entry = Open(new_meta, config.open_date, account, None, None)
+            new_entries.append(open_entry)
 
     return new_entries, errors
 

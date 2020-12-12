@@ -1,9 +1,15 @@
 Feature: Configure plugin behavior
 
+  Background: default
+    Given the following setup:
+      2020-01-01 open Assets:Cash
+      2020-01-01 open Expenses:Food:Drinks
+      2020-01-01 open Income:Random
+
   Scenario: Rename mark at tag
 
     Given this config:
-      {"mark_name": "asdf"}
+      {'mark_name': 'asdf'}
 
     When this transaction is processed:
       2020-01-01 * "BarAlice" "Lunch with friend Bob" #asdf-Bob
@@ -21,7 +27,7 @@ Feature: Configure plugin behavior
   Scenario: Rename mark at meta
 
     Given this config:
-      {"mark_name": "asdf"}
+      {'mark_name': 'asdf'}
 
     When this transaction is processed:
       2020-01-01 * "BarAlice" "Lunch with friend Bob"
@@ -37,12 +43,10 @@ Feature: Configure plugin behavior
         Assets:Debtors:Bob          5.00 EUR
           shared: "Expenses:Food:Drinks (50%, 5.00 EUR)"
 
-
-
   Scenario: Disable adding new meta
 
     Given this config:
-      {"meta_name": None}
+      {'meta_name': None}
 
     When this transaction is processed:
       2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-Bob
@@ -58,7 +62,7 @@ Feature: Configure plugin behavior
   Scenario: Rename added meta
 
     Given this config:
-      {"meta_name": 'asdf'}
+      {'meta_name': 'asdf'}
 
     When this transaction is processed:
       2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-Bob
@@ -76,7 +80,7 @@ Feature: Configure plugin behavior
   Scenario: Rename debtor account
 
     Given this config:
-      {"account_debtors": "Assets:EUR:Debtors"}
+      {'account_debtors': 'Assets:EUR:Debtors'}
 
     When this transaction is processed:
       2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-Bob
@@ -94,7 +98,7 @@ Feature: Configure plugin behavior
   Scenario: Rename debtor account
 
     Given this config:
-      {"account_creditors": "Liabilities:EUR:Creditors"}
+      {'account_creditors': 'Liabilities:EUR:Creditors'}
 
     When this transaction is processed:
       2020-01-01 * "BarAlice" "Found change on floor with Bob"
@@ -109,3 +113,16 @@ Feature: Configure plugin behavior
           shared: "Liabilities:EUR:Creditors:Bob 40% (-4.00 EUR)"
         Liabilities:EUR:Creditors:Bob     -4.00 EUR
           shared: "Income:Random 40% (-4.00 EUR)"
+
+  Scenario: Disable creation open entries
+
+    Given this config:
+      {'open_date': None}
+
+    When this transaction is processed:
+      2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-Bob
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks
+
+    Then should produce beancount error:
+      Invalid reference to unknown account 'Assets:Debtors:Bob'

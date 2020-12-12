@@ -1,8 +1,12 @@
 Feature: Share several postings to several accounts
 
-  Background: Simple case without config
+  Background: default
     Given this config:
       {}
+    Given the following setup:
+      2020-01-01 open Assets:Cash
+      2020-01-01 open Expenses:Food:Drinks
+      2020-01-01 open Expenses:Food:Lunch
 
   Scenario: Share all applicable postings to several overlapping accounts
     When this transaction is processed:
