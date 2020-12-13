@@ -4,7 +4,8 @@ Share
 [![PyPI - Version](https://img.shields.io/pypi/v/beancount_share)](https://pypi.org/project/beancount-share/)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/beancount_share)](https://pypi.org/project/beancount-share/)
 [![PyPI - Wheel](https://img.shields.io/pypi/wheel/beancount_share)](https://pypi.org/project/beancount-share/)
-[![PyPI - License](https://img.shields.io/pypi/l/beancount_share)](https://choosealicense.com/licenses/agpl-3.0/)
+[![License](https://img.shields.io/pypi/l/beancount_share)](https://choosealicense.com/licenses/agpl-3.0/)
+[![Linting](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 A beancount plugin to share expenses among multiple partners within one ledger.
 

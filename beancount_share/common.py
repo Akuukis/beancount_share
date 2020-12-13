@@ -5,6 +5,7 @@ from beancount.core.inventory import Inventory
 
 import beancount_share.metaset as metaset
 
+
 def read_config(config_string):
     """
     Args:
@@ -21,7 +22,10 @@ def read_config(config_string):
         raise RuntimeError("Invalid plugin configuration: should be a single dict.")
     return config_obj
 
-MARK_SEPERATOR = '-'
+
+MARK_SEPERATOR = "-"
+
+
 def normalize_marked_txn(tx: Transaction, mark_name: str):
     """
     If a transaction is marked, hoist marked tags into transation meta(s).
@@ -33,23 +37,31 @@ def normalize_marked_txn(tx: Transaction, mark_name: str):
         Transaction with normalized marks.
     """
     for tag in tx.tags:
-        if tag == mark_name or tag[0:len(mark_name+MARK_SEPERATOR)] == mark_name+MARK_SEPERATOR:
+        if (
+            tag == mark_name
+            or tag[0 : len(mark_name + MARK_SEPERATOR)] == mark_name + MARK_SEPERATOR
+        ):
             tx = tx._replace(
                 tags=tx.tags.difference([tag]),
-                meta=metaset.add(tx.meta, mark_name, tag[len(mark_name+MARK_SEPERATOR):] or ''),
+                meta=metaset.add(
+                    tx.meta, mark_name, tag[len(mark_name + MARK_SEPERATOR) :] or ""
+                ),
             )
 
     return tx
 
 
-DEFAULT_APPLICABLE_ACCOUNT_TYPES = set(["Income", "Expenses", "Assets", "Liabilities", "Equity"])
+DEFAULT_APPLICABLE_ACCOUNT_TYPES = set(
+    ["Income", "Expenses", "Assets", "Liabilities", "Equity"]
+)
+
 
 def marked_postings(
-        tx: Transaction,
-        mark_name: str,
-        applicable_account_types: Set[str] = DEFAULT_APPLICABLE_ACCOUNT_TYPES,
-        allow_posting_level_mark: bool = True
-    ):
+    tx: Transaction,
+    mark_name: str,
+    applicable_account_types: Set[str] = DEFAULT_APPLICABLE_ACCOUNT_TYPES,
+    allow_posting_level_mark: bool = True,
+):
     """
     Iterates over postings of the transaction, returning most specific mark value for applicable account types.
 
@@ -66,37 +78,34 @@ def marked_postings(
     """
 
     default_marks = metaset.get(tx.meta, mark_name)
-    tx = tx._replace(
-        meta=metaset.clear(tx.meta, mark_name)
-    )
+    tx = tx._replace(meta=metaset.clear(tx.meta, mark_name))
 
     for _posting in tx.postings:
         marks = metaset.get(_posting.meta, mark_name)
-        posting = _posting._replace(
-            meta=metaset.clear(_posting.meta, mark_name)
-        )
+        posting = _posting._replace(meta=metaset.clear(_posting.meta, mark_name))
 
-        if(len(marks) > 0):
+        if len(marks) > 0:
             yield marks, posting, _posting, tx
-        elif(len(default_marks) > 0):
-            if(posting.account.split(':')[0] not in applicable_account_types):
+        elif len(default_marks) > 0:
+            if posting.account.split(":")[0] not in applicable_account_types:
                 yield None, posting, _posting, tx
             else:
                 yield default_marks, posting, _posting, tx
         else:
             yield None, posting, _posting, tx
 
+
 def sum_income(tx: Transaction) -> Inventory:
     total = Inventory()
     for posting in tx.postings:
-        if(posting.account.split(':')[0] == "Income"):
+        if posting.account.split(":")[0] == "Income":
             total.add_position(posting)
     return total
+
 
 def sum_expenses(tx: Transaction) -> Inventory:
     total = Inventory()
     for posting in tx.postings:
-        if(posting.account.split(':')[0] == "Expenses"):
+        if posting.account.split(":")[0] == "Expenses":
             total.add_position(posting)
     return total
-

@@ -18,7 +18,8 @@ from beancount.core.data import Transaction, Posting, Meta
 from beancount.core.inventory import Inventory
 
 datatype_set = set
-DIGITS_SET = datatype_set(['0','1','2','3','4','5','6','7','8','9'])
+DIGITS_SET = datatype_set(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
+
 
 def contains_key(key: str, meta: str):
     """
@@ -40,16 +41,18 @@ def contains_key(key: str, meta: str):
     Return:
         Bool
     """
-    if(key is meta):
+    if key is meta:
         return True
 
-    if(meta[0:len(key)] == key and datatype_set(meta[len(key):]) <= DIGITS_SET):
+    if meta[0 : len(key)] == key and datatype_set(meta[len(key) :]) <= DIGITS_SET:
         return True
 
     return False
 
+
 def get(meta: Meta, key: str) -> Set[str]:
-    return [v for k,v in meta.items() if contains_key(key, k)]
+    return [v for k, v in meta.items() if contains_key(key, k)]
+
 
 def add(meta: Meta, key: str, value: str) -> Meta:
     copy = deepcopy(meta)
@@ -64,13 +67,15 @@ def add(meta: Meta, key: str, value: str) -> Meta:
     copy[safe_key] = value
     return copy
 
+
 def discard(meta: Meta, key: str) -> Meta:
     copy = deepcopy(meta)
 
-    if (key in meta):
+    if key in meta:
         del copy[key]
 
     return copy
+
 
 def remove(meta: Meta, key: str) -> Meta:
     copy = deepcopy(meta)
@@ -79,13 +84,15 @@ def remove(meta: Meta, key: str) -> Meta:
 
     return copy
 
+
 def clear(meta: Meta, key: str) -> Meta:
     copy = deepcopy(meta)
 
-    for metakey in [k for k,_ in meta.items() if contains_key(key, k)]:
+    for metakey in [k for k, _ in meta.items() if contains_key(key, k)]:
         del copy[metakey]
 
     return copy
+
 
 def set(meta: Meta, key: str, new_set: Set[str]) -> Meta:
     copy = clear(meta, key)
@@ -94,6 +101,7 @@ def set(meta: Meta, key: str, new_set: Set[str]) -> Meta:
         copy = add(meta, key, elem)
 
     return copy
+
 
 def reset(meta: Meta, key: str) -> Meta:
     elements = get(meta, key)

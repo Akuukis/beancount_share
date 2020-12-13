@@ -1,6 +1,9 @@
 init:
 	pip3 install -r requirements.txt
 
+lint:
+	black  beancount_share/
+
 test:
 	pytest --maxfail=1 --verbose -vv
 
