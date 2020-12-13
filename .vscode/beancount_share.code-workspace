@@ -6,6 +6,7 @@
             "editorconfig.editorconfig",
             "jasonnutter.vscode-codeowners",
             "ms-python.python",
+            "ryanluker.vscode-coverage-gutters",
             "shardulm94.trailing-spaces",
             "tyriar.sort-lines",
             "yzhang.markdown-all-in-one"
@@ -26,6 +27,9 @@
         }
     ],
     "settings": {
+        "coverage-gutters.showLineCoverage": true,
+        "coverage-gutters.showRulerCoverage": true,
+        "coverage-gutters.showGutterCoverage": false,
         "cucumberautocomplete.steps": [
             "../tests/*.py"
         ],
@@ -67,6 +71,10 @@
         "editor.detectIndentation": false,  // Let `.editconfig` decide.
         "python.linting.pylintEnabled": true,
         "python.linting.enabled": true,
-        "python.formatting.provider": "black"
+        "python.formatting.provider": "black",
+        "python.testing.unittestEnabled": false,
+        "python.testing.nosetestsEnabled": false,
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": [".", "--cov-report=xml:cov.xml", "--cov=beancount_share", "-v"]
     }
 }

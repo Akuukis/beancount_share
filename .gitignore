@@ -4,3 +4,5 @@ dist/
 *.egg-info/
 MANIFEST
 *.pyc
+cov.xml
+.coverage

@@ -1,4 +1,5 @@
 beancount
 pytest-bdd
+pytest-cov
 twine
 black

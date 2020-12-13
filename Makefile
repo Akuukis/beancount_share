@@ -1,11 +1,11 @@
-init:
+install:
 	pip3 install -r requirements.txt
 
 lint:
 	black  beancount_share/
 
 test:
-	pytest --maxfail=1 --verbose -vv
+	pytest --maxfail=1 -v --cov=beancount_share
 
 clean:
 	rm -rf build/* dist/*
