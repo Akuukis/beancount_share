@@ -11,7 +11,7 @@ def strip_flaky_meta(transaction: Transaction):
     transaction = transaction._replace(meta=metaset.discard(transaction.meta, 'filename'))
     transaction = transaction._replace(meta=metaset.discard(transaction.meta, 'lineno'))
     # new_postings = list(tx.postings)
-    for j,posting in enumerate(transaction.postings):
+    for j,_ in enumerate(transaction.postings):
         transaction.postings[j] = transaction.postings[j]._replace(meta=metaset.discard(transaction.postings[j].meta, 'filename'))
         transaction.postings[j] = transaction.postings[j]._replace(meta=metaset.discard(transaction.postings[j].meta, 'lineno'))
         transaction.postings[j] = transaction.postings[j]._replace(meta=metaset.discard(transaction.postings[j].meta, '__automatic__'))
@@ -118,24 +118,24 @@ def tx_not_modified(input_txns, output_txns):
 
 
 @then(parsers.parse('should not error'))
-def added_error(errors):
+def not_error(errors):
     assert len(errors) == 0
 
-@then(parsers.parse('should produce plugin error:\n'
+@then(parsers.parse('should produce plugin error:'
                     '{exception_text}'))
-def added_error(input_txns, errors, exception_text):
+def plugin_error(input_txns, errors, exception_text):
     original_txn = input_txns[-1]
     assert len(errors) == 1
-    expected_error = share.PluginShareParseError(original_txn.meta, exception_text, original_txn)
+    expected_error = share.PluginShareParseError(original_txn.meta, exception_text.strip('\n'), original_txn)
     assert type(errors[0]) is type(expected_error)
     assert errors[0].message == expected_error.message
     assert strip_flaky_meta(errors[0].entry) == strip_flaky_meta(expected_error.entry)
 
-@then(parsers.parse('should produce beancount error:\n'
+@then(parsers.parse('should produce beancount error:'
                     '{exception_text}'))
-def added_error(input_txns, errors, exception_text, output_txns):
+def beancount_error(input_txns, errors, exception_text, output_txns):
     original_txn = input_txns[-1]
     modified_txn = output_txns[-1]
     assert len(errors) == 1
-    expected_error = share.PluginShareParseError(original_txn.meta, exception_text, original_txn)
+    expected_error = share.PluginShareParseError(original_txn.meta, exception_text.strip('\n'), original_txn)
     assert errors[0].message == expected_error.message and errors[0].entry == modified_txn

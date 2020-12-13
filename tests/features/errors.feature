@@ -30,7 +30,7 @@ Feature: Report meaningful errors
           share2: "Charlie-6"
 
     Then the original transaction should not be modified
-    And should produce plugin error:
+    Then should produce plugin error:
         The posting can't share more than it's absolute value
 
   Scenario: Throw Error if total shared relative amount is greater than 100%
