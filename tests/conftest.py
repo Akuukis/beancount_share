@@ -20,9 +20,10 @@ def strip_flaky_meta(transaction: Transaction):
     return transaction
 
 
-#
-# Fixtures/steps used by all plugins
-#
+@fixture
+def config():
+    return ""
+
 @fixture
 def output_txns():
     """
@@ -34,17 +35,14 @@ def output_txns():
     """
     return list()
 
-#
-# Fixtures/steps used by all plugins
-#
 @fixture
 def errors():
     return list()
 
 @given(parsers.parse('this config:'
                      '{config}'))
-def config(config):
-    return config
+def config_custom(config):
+    pass
 
 @given(parsers.parse('the following setup:'
                      '{setup_txns_text}'))
@@ -62,7 +60,7 @@ def input_txns(input_txn_text):
 @when(parsers.parse('this transaction is processed:'
                     '{input_txn_text}'))
 def is_processed(input_txns, errors, config, input_txn_text, setup_txns_text, output_txns):
-    text = 'plugin "beancount_share.share" "' + config[1:] + '"\n' + setup_txns_text + input_txn_text
+    text = 'plugin "beancount_share.share" "' + config.strip('\n') + '"\n' + setup_txns_text + input_txn_text
     print('\nInput (full & raw):\n------------------------------------------------\n' + text + '\n')
     output_txns[:], errors[:], _ = load_string(text)
     print('\nOutput (Transactions):\n------------------------------------------------\n')

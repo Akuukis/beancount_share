@@ -4,8 +4,6 @@ Feature: Share expenses with other people easily
 
   Scenario: Example in this Readme
 
-    Given this config:
-      {}
     Given the following setup:
       2020-01-01 open Assets:Cash
       2020-01-01 open Expenses:Food:Drinks
