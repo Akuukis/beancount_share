@@ -1,10 +1,10 @@
 Share
 ===============================================================================
 
-[![PyPI - Version](https://img.shields.io/pypi/v/beancount_share)](https://pypi.org/project/packages/beancount_share/)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/beancount_share)
-![PyPI - Wheel](https://img.shields.io/pypi/wheel/beancount_share)
-![PyPI - License](https://img.shields.io/pypi/l/beancount_share)
+[![PyPI - Version](https://img.shields.io/pypi/v/beancount_share)](https://pypi.org/project/beancount-share/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/beancount_share)](https://pypi.org/project/beancount-share/)
+[![PyPI - Wheel](https://img.shields.io/pypi/wheel/beancount_share)](https://pypi.org/project/beancount-share/)
+[![PyPI - License](https://img.shields.io/pypi/l/beancount_share)](https://choosealicense.com/licenses/agpl-3.0/)
 
 A beancount plugin to share expenses among multiple partners within one ledger.
 
@@ -367,15 +367,3 @@ Development
 ===============================================================================
 
 Please see Makefile and inline comments.
-
-
-
-
-
-
-
-
-
-- all new names you add in the tag after `#share-` will be automatically added to your debtors list **!** what about Caps?
-- **!** creditors or debtors?
-
