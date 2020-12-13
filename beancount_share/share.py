@@ -58,7 +58,19 @@ def share(
     errors: List[PluginShareParseError] = []
 
     # 1. Parse config
-    config_obj = read_config(config_string)
+    try:
+        config_obj = read_config(config_string)
+    except:
+
+        errors.append(
+            PluginShareParseError(
+                new_metadata('', 0),
+                'Plugin "share" received a bad configuration. Please provide an object.',
+                entries[-1],  # TODO: how to pass nothing? For now pass last to simplify testing.
+            )
+        )
+        return entries, errors
+
     raw_open_date = config_obj.pop("open_date", "1970-01-01")
     config = Config(
         config_obj.pop("mark_name", "share"),
@@ -128,6 +140,7 @@ def share(
 
         # 4. Per posting, split it up based on marks.
         new_postings = []
+        bailed = False
         for marks, posting, orig, tx_clean in marked_postings_result:
 
             # 4.1. or skip if not marked.
@@ -154,25 +167,26 @@ def share(
             todo_absent: List[str] = list()
             for mark in marks:
                 parts = mark.split("-")
+                print(parts)
                 account: str
 
                 # 5.1. Apply defaults.
-                try:
-                    account = parts[0] if ":" in parts[0] else account_prefix + parts[0]
-                    new_accounts.add(account)
-
-                except IndexError:
+                if(parts[0] == ''):
                     errors.append(
                         PluginShareParseError(
                             new_metadata(
                                 posting.meta["filename"], posting.meta["lineno"]
                             ),
-                            'Mark "{}" must contain account name.'.format(mark),
+                            'Plugin "share" requires mark to contain account name, seperated with "-".',
                             entry,
                         )
                     )
                     new_postings.append(orig)
-                    continue
+                    bailed = True
+                    break
+
+                account = parts[0] if ":" in parts[0] else account_prefix + parts[0]
+                new_accounts.add(account)
 
                 if len(parts) > 1:
                     if "%" in parts[1] or "p" in parts[1]:
@@ -183,20 +197,21 @@ def share(
                                     account,
                                 )
                             )
-                        except IndexError:
+                        except Exception:
                             errors.append(
                                 PluginShareParseError(
                                     new_metadata(
                                         posting.meta["filename"], posting.meta["lineno"]
                                     ),
-                                    'Something wrong with percent fraction "{}", please use a dot, e.g. "33.3%".'.format(
+                                    'Something wrong with relative fraction "{}", please use a dot, e.g. "33.33p".'.format(
                                         parts[1]
                                     ),
                                     entry,
                                 )
                             )
                             new_postings.append(orig)
-                            continue
+                            bailed = True
+                            break
                     else:
                         try:
                             todo_absolute.append(
@@ -208,20 +223,21 @@ def share(
                                     account,
                                 )
                             )
-                        except IndexError:
+                        except Exception:
                             errors.append(
                                 PluginShareParseError(
                                     new_metadata(
                                         posting.meta["filename"], posting.meta["lineno"]
                                     ),
-                                    'Something wrong with absolute fraction "{}", please use a dot, e.g. "33.3".'.format(
+                                    'Something wrong with absolute fraction "{}", please use a dot, e.g. "2.50".'.format(
                                         parts[1]
                                     ),
                                     entry,
                                 )
                             )
                             new_postings.append(orig)
-                            continue
+                            bailed = True
+                            break
                 else:
                     todo_absent.append(account)
 
@@ -410,6 +426,11 @@ def share(
             new_postings.append(posting)
 
             new_postings.extend(new_postings_inner)
+
+        if bailed:
+            print('bailed')
+            new_entries.append(entry)
+            continue
 
         for account in new_accounts:
             new_postings = group_postings(new_postings, account, config.meta_name)

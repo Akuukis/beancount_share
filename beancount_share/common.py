@@ -1,4 +1,5 @@
 from typing import List, Set, Union, Tuple
+from copy import deepcopy
 
 from beancount.core.data import Transaction, Posting
 from beancount.core.inventory import Inventory
@@ -36,19 +37,21 @@ def normalize_marked_txn(tx: Transaction, mark_name: str):
     Return:
         Transaction with normalized marks.
     """
-    for tag in tx.tags:
+    copy = deepcopy(tx)
+
+    for tag in copy.tags:
         if (
             tag == mark_name
             or tag[0 : len(mark_name + MARK_SEPERATOR)] == mark_name + MARK_SEPERATOR
         ):
-            tx = tx._replace(
-                tags=tx.tags.difference([tag]),
+            copy = copy._replace(
+                tags=copy.tags.difference([tag]),
                 meta=metaset.add(
-                    tx.meta, mark_name, tag[len(mark_name + MARK_SEPERATOR) :] or ""
+                    copy.meta, mark_name, tag[len(mark_name + MARK_SEPERATOR) :] or ""
                 ),
             )
 
-    return tx
+    return copy
 
 
 DEFAULT_APPLICABLE_ACCOUNT_TYPES = set(
@@ -76,23 +79,24 @@ def marked_postings(
         original posting.
         original transaction.
     """
+    copy = deepcopy(tx)
 
     default_marks = metaset.get(tx.meta, mark_name)
-    tx = tx._replace(meta=metaset.clear(tx.meta, mark_name))
+    copy = copy._replace(meta=metaset.clear(tx.meta, mark_name))
 
-    for _posting in tx.postings:
+    for _posting in copy.postings:
         marks = metaset.get(_posting.meta, mark_name)
         posting = _posting._replace(meta=metaset.clear(_posting.meta, mark_name))
 
         if len(marks) > 0:
-            yield marks, posting, _posting, tx
+            yield marks, posting, _posting, copy
         elif len(default_marks) > 0:
             if posting.account.split(":")[0] not in applicable_account_types:
-                yield None, posting, _posting, tx
+                yield None, posting, _posting, copy
             else:
-                yield default_marks, posting, _posting, tx
+                yield default_marks, posting, _posting, copy
         else:
-            yield None, posting, _posting, tx
+            yield None, posting, _posting, copy
 
 
 def sum_income(tx: Transaction) -> Inventory:

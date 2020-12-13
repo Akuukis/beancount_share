@@ -1,14 +1,42 @@
 Feature: Report meaningful errors
 
   Background: default
-    Given this config:
-      {}
     Given the following setup:
       2020-01-01 open Assets:Cash
       2020-01-01 open Assets:Safe
       2020-01-01 open Expenses:Food:Drinks
       2020-01-01 open Expenses:Food:Lunch
       2020-01-01 open Income:Random
+
+  Scenario: Throw Error if no account provided
+    When this transaction is processed:
+      2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks
+
+    Then the original transaction should not be modified
+    And should produce plugin error:
+      Plugin "share" requires mark to contain account name, seperated with "-".
+
+  Scenario: Throw Error for badly formatted abosulute amount
+    When this transaction is processed:
+      2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-Bob-2a50
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks
+
+    Then the original transaction should not be modified
+    And should produce plugin error:
+      Something wrong with absolute fraction "2a50", please use a dot, e.g. "2.50".
+
+  Scenario: Throw Error for badly formatted relative amount
+    When this transaction is processed:
+      2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-Bob-3a33p
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks
+
+    Then the original transaction should not be modified
+    And should produce plugin error:
+      Something wrong with relative fraction "3a33p", please use a dot, e.g. "33.33p".
 
   Scenario: Throw Error if sharing a non-applicable posting (Assets, Liabilities or Equity)
     When this transaction is processed:

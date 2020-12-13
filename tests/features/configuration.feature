@@ -6,6 +6,20 @@ Feature: Configure plugin behavior
       2020-01-01 open Expenses:Food:Drinks
       2020-01-01 open Income:Random
 
+  Scenario: Throw Error if bad config provided
+
+    Given this config:
+      'I am not an object'
+
+    When this transaction is processed:
+      2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks
+
+    Then the original transaction should not be modified
+    And should produce plugin error:
+      Plugin "share" received a bad configuration. Please provide an object.
+
   Scenario: Rename mark at tag
 
     Given this config:

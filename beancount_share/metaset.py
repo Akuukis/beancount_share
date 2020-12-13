@@ -76,13 +76,13 @@ def discard(meta: Meta, key: str) -> Meta:
 
     return copy
 
+## Not used for now. Disabled to not pollute coverage report.
+# def remove(meta: Meta, key: str) -> Meta:
+#     copy = deepcopy(meta)
 
-def remove(meta: Meta, key: str) -> Meta:
-    copy = deepcopy(meta)
+#     del copy[key]
 
-    del copy[key]
-
-    return copy
+#     return copy
 
 
 def clear(meta: Meta, key: str) -> Meta:
@@ -93,17 +93,17 @@ def clear(meta: Meta, key: str) -> Meta:
 
     return copy
 
+## Not used for now. Disabled to not pollute coverage report.
+# def set(meta: Meta, key: str, new_set: Set[str]) -> Meta:
+#     copy = clear(meta, key)
 
-def set(meta: Meta, key: str, new_set: Set[str]) -> Meta:
-    copy = clear(meta, key)
+#     for elem in new_set:
+#         copy = add(meta, key, elem)
 
-    for elem in new_set:
-        copy = add(meta, key, elem)
+#     return copy
 
-    return copy
+## Not used for now. Disabled to not pollute coverage report.
+# def reset(meta: Meta, key: str) -> Meta:
+#     elements = get(meta, key)
 
-
-def reset(meta: Meta, key: str) -> Meta:
-    elements = get(meta, key)
-
-    return set(meta, key, elements)
+#     return set(meta, key, elements)
