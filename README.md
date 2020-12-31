@@ -328,21 +328,34 @@ The amount will be spilt by these rules in this order:
 Configuration
 ===============================================================================
 
+Note: **Do NOT use double-quotes within the configuration!** The configuration is a Python dict, not a JSON object.
 
 This is the default configuration in full. Providing it equals to providing no configuration at all.
 
 ```
 plugin "beancount_share" "{
-    mark_name: "share",
-    meta_name: "shared",
-    account_debtors: "Assets:Debtors",
-    account_creditors: "Liabilities:Creditors",
-    open_date: "1970-01-01",
-    quantize: "0.01"
+    mark_name: 'share',
+    meta_name: 'shared',
+    account_debtors: 'Assets:Debtors',
+    account_creditors: 'Liabilities:Creditors',
+    open_date: '1970-01-01',
+    quantize: '0.01'
 }"
 ```
 
-Note that `meta_name` and `open_date` may also be set to `None` - former to disable informative meta generation, and latter to disable `open` entry creation.
+Note that `meta_name` and `open_date` may also be set to `None` - former to disable informative meta generation, and latter to disable `open` entry creation. Example:
+
+
+```
+plugin "beancount_share" "{
+    mark_name: 'share',
+    meta_name: None,
+    account_debtors: 'Assets:Debtors',
+    account_creditors: 'Liabilities:Creditors',
+    open_date: None,
+    quantize: '0.01'
+}"
+```
 
 
 
