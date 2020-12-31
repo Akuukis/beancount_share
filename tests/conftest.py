@@ -5,7 +5,7 @@ from beancount.core.data import Transaction
 from beancount.core.compare import hash_entry, includes_entries, excludes_entries
 from beancount.loader import load_string
 from beancount.parser import printer
-from beancount_plugin_utils import metaset
+from beancount_plugin_utils import metaset, marked
 from context import share
 
 def strip_flaky_meta(transaction: Transaction):
@@ -136,6 +136,16 @@ def plugin_error(input_txns, errors, exception_text):
     original_txn = input_txns[-1]
     assert len(errors) == 1
     expected_error = share.PluginShareParseError(original_txn.meta, exception_text.strip('\n'), original_txn)
+    assert type(errors[0]) is type(expected_error)
+    assert errors[0].message == expected_error.message
+    assert strip_flaky_meta(errors[0].entry) == strip_flaky_meta(expected_error.entry)
+
+@then(parsers.parse('should produce marked error:'
+                    '{exception_text}'))
+def marked_error(input_txns, errors, exception_text):
+    original_txn = input_txns[-1]
+    assert len(errors) == 1
+    expected_error = marked.PluginUtilsMarkedError(original_txn.meta, exception_text.strip('\n'), original_txn)
     assert type(errors[0]) is type(expected_error)
     assert errors[0].message == expected_error.message
     assert strip_flaky_meta(errors[0].entry) == strip_flaky_meta(expected_error.entry)

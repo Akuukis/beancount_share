@@ -27,7 +27,6 @@ Feature: Share expenses with other people easily
     Given this config:
       {
         'account_debtors': 'Assets:US:Share',
-        'meta_name': 'share',
       }
     Given the following setup:
       2018-01-01 open Liabilities:US:Amex:BlueCash
@@ -43,16 +42,15 @@ Feature: Share expenses with other people easily
       2018-12-23 * "WHISK" "Water refill"
         Liabilities:US:Amex:BlueCash  -32.66 USD
         Expenses:Food:Grocery          19.60 USD
-          share: "Assets:US:Share:Carolyn 40% (13.06 USD)"
+          shared: "Assets:US:Share:Carolyn 40% (13.06 USD)"
         Assets:US:Share:Carolyn        13.06 USD
-          share: "Expenses:Food:Grocery 40% (13.06 USD)"
+          shared: "Expenses:Food:Grocery 40% (13.06 USD)"
 
   Scenario: Kyle example in Beancount docs
 
     Given this config:
       {
         'account_debtors': 'Expenses',
-        'meta_name': 'share',
       }
     Given the following setup:
       2018-01-01 open Liabilities:US:Amex:BlueCash
@@ -68,9 +66,9 @@ Feature: Share expenses with other people easily
       2019-02-01 * "AMAZON.COM" "MERCHANDISE - Diapers size 4 for Kyle"
         Liabilities:US:Amex:BlueCash  -49.99 USD
         Expenses:Pharmacy               0.00 USD
-          share: "Expenses:Kyle 100% (49.99 USD)"
+          shared: "Expenses:Kyle 100% (49.99 USD)"
         Expenses:Kyle                   49.99 USD
-          share: "Expenses:Pharmacy 100% (49.99 USD)"
+          shared: "Expenses:Pharmacy 100% (49.99 USD)"
 
 
   Scenario: Bug #1 - handle padding
