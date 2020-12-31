@@ -91,6 +91,12 @@ def load_config(config_string: str) -> Config:
     except:
         raise RuntimeError('Bad "open_date" value - it must be a valid date, formatted in UTC (e.g. "2000-01-01").')
 
+    try:
+        if "quantize" in config_dict:
+            config_dict["quantize"] = D(config_dict["quantize"])
+    except:
+        raise RuntimeError('Bad "quantize" value - it must be a string that represents a decimal value (e.g. "0.01").')
+
     # 3. Create config itself. Just copy/paste this block. Done!
     return Config(**config_dict)
 

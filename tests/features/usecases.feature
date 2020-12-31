@@ -71,7 +71,7 @@ Feature: Share expenses with other people easily
           shared: "Expenses:Pharmacy 100% (49.99 USD)"
 
 
-  Scenario: Bug #1 - handle padding
+  Scenario: Bug No 1: handle padding
     Given the following setup:
       2020-01-01 open Equity:Opening-Balances CHF
       2020-01-01 open Assets:Bank CHF
@@ -85,3 +85,36 @@ Feature: Share expenses with other people easily
         Assets:Bank           -1000 CHF
 
     Then should not error
+
+
+  Scenario: Bug No 3: unquoted dict keys
+    Given this config:
+      {
+        mark_name: 'share',
+        meta_name: None,
+        account_debtors: 'Liabilities:Receivables',
+        account_creditors: 'Liabilities:Receivables',
+        open_date: None
+      }
+    Given the following setup:
+      2020-01-01 open Expenses:Food:Takeout
+      2020-01-01 open Liabilities:Receivables:Gia
+      2020-01-01 open Liabilities:US:Chase:Freedom USD
+
+    When this transaction is processed:
+      2020-02-01 * "Takeout" "Food" #share-Gia
+        Liabilities:US:Chase:Freedom                -50.00 USD
+        Expenses:Food:Takeout
+
+    Then the original transaction should not be modified
+    And should produce config error:
+      Failed to parse plugin configuration, skipping.. The config: {
+        mark_name: 'share',
+        meta_name: None,
+        account_debtors: 'Liabilities:Receivables',
+        account_creditors: 'Liabilities:Receivables',
+        open_date: None
+      }
+
+
+

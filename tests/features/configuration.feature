@@ -6,13 +6,39 @@ Feature: Configure plugin behavior
       2020-01-01 open Expenses:Food:Drinks
       2020-01-01 open Income:Random
 
+  Scenario: Handle default configuration
+
+    Given this config:
+      {
+        'mark_name': 'share',
+        'meta_name': 'shared',
+        'account_debtors': 'Assets:Debtors',
+        'account_creditors': 'Liabilities:Creditors',
+        'open_date': '1970-01-01',
+        'quantize': '0.01'
+      }
+
+    When this transaction is processed:
+      2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-Bob
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks
+
+    Then should not error
+    Then the original transaction should be modified:
+      2020-01-01 * "BarAlice" "Lunch with friend Bob"
+        Assets:Cash           -10.00 EUR
+        Expenses:Food:Drinks    5.00 EUR
+          shared: "Assets:Debtors:Bob (50%, 5.00 EUR)"
+        Assets:Debtors:Bob      5.00 EUR
+          shared: "Expenses:Food:Drinks (50%, 5.00 EUR)"
+
   Scenario: Throw Error if bad config provided
 
     Given this config:
       'I am not an object'
 
     When this transaction is processed:
-      2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-
+      2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-Bob
         Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
 
@@ -26,13 +52,27 @@ Feature: Configure plugin behavior
       {'open_date': 'I am not an UTC date'}
 
     When this transaction is processed:
-      2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-
+      2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-Bob
         Assets:Cash               -10.00 EUR
         Expenses:Food:Drinks
 
     Then the original transaction should not be modified
     And should produce config error:
       Bad "open_date" value - it must be a valid date, formatted in UTC (e.g. "2000-01-01").
+
+  Scenario: Throw Error if bad quantize in the config provided
+
+    Given this config:
+      {'quantize': 'I am not an decimal value'}
+
+    When this transaction is processed:
+      2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-Bob
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks
+
+    Then the original transaction should not be modified
+    And should produce config error:
+      Bad "quantize" value - it must be a string that represents a decimal value (e.g. "0.01").
 
   Scenario: Rename mark at tag
 
