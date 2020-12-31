@@ -20,6 +20,20 @@ Feature: Configure plugin behavior
     And should produce config error:
       Plugin configuration must be a dict, skipping.. The config: 'I am not an object'
 
+  Scenario: Throw Error if bad date in the config provided
+
+    Given this config:
+      {'open_date': 'I am not an UTC date'}
+
+    When this transaction is processed:
+      2020-01-01 * "BarAlice" "Lunch with friend Bob" #share-
+        Assets:Cash               -10.00 EUR
+        Expenses:Food:Drinks
+
+    Then the original transaction should not be modified
+    And should produce config error:
+      Bad "open_date" value - it must be a valid date, formatted in UTC (e.g. "2000-01-01").
+
   Scenario: Rename mark at tag
 
     Given this config:

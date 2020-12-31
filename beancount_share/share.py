@@ -101,9 +101,7 @@ def per_marked_transaction(tx: Transaction, tx_orig: Transaction, config: Config
     total_expenses = sum_expenses(tx)
     total_value: Amount
 
-    if total_expenses.is_empty() and total_income.is_empty():
-        return tx_orig  # If tx nor postings are not marked, bail early.
-    elif not total_expenses.is_empty() and total_income.is_empty():
+    if not total_expenses.is_empty() and total_income.is_empty():
         account_prefix = config.account_debtors + ":"
         total_value = total_expenses.get_currency_units(tx.postings[0].units.currency)
     elif total_expenses.is_empty() and not total_income.is_empty():
