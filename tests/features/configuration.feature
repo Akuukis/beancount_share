@@ -17,8 +17,8 @@ Feature: Configure plugin behavior
         Expenses:Food:Drinks
 
     Then the original transaction should not be modified
-    And should produce plugin error:
-      Plugin "share" received a bad configuration. Please provide an object.
+    And should produce config error:
+      Plugin configuration must be a dict, skipping.. The config: 'I am not an object'
 
   Scenario: Rename mark at tag
 

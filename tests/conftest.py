@@ -120,6 +120,16 @@ def tx_not_modified(input_txns, output_txns):
 def not_error(errors):
     assert len(errors) == 0
 
+@then(parsers.parse('should produce config error:'
+                    '{exception_text}'))
+def config_error(input_txns, errors, exception_text):
+    original_txn = input_txns[-1]
+    assert len(errors) == 1
+    expected_error = share.PluginShareParseError(original_txn.meta, exception_text.strip('\n'), original_txn)
+    assert type(errors[0]) is type(expected_error)
+    assert errors[0].message == expected_error.message
+    assert errors[0].entry == None
+
 @then(parsers.parse('should produce plugin error:'
                     '{exception_text}'))
 def plugin_error(input_txns, errors, exception_text):
