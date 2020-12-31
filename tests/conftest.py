@@ -5,7 +5,8 @@ from beancount.core.data import Transaction
 from beancount.core.compare import hash_entry, includes_entries, excludes_entries
 from beancount.loader import load_string
 from beancount.parser import printer
-from context import share, metaset
+from beancount_plugin_utils import metaset
+from context import share
 
 def strip_flaky_meta(transaction: Transaction):
     transaction = transaction._replace(meta=metaset.discard(transaction.meta, 'filename'))

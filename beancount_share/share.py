@@ -29,7 +29,7 @@ from beancount_share.common import (
     sum_income,
     sum_expenses,
 )
-import beancount_share.metaset as metaset
+from beancount_plugin_utils import metaset
 
 __plugins__ = ["share"]
 

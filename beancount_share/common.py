@@ -4,7 +4,7 @@ from copy import deepcopy
 from beancount.core.data import Transaction, Posting
 from beancount.core.inventory import Inventory
 
-import beancount_share.metaset as metaset
+from beancount_plugin_utils import metaset
 
 
 def read_config(config_string):
