@@ -10,7 +10,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='beancount_share',
-    version='0.1.4',
+    version='0.1.5',
     description='Plugin for Beancount to share expenses.',
 
     long_description=long_description,
