@@ -30,6 +30,7 @@ from beancount_share.common import (
     sum_expenses,
 )
 from beancount_plugin_utils import metaset
+from beancount_plugin_utils.merge_postings import merge_postings
 
 __plugins__ = ["share"]
 
@@ -431,7 +432,7 @@ def share(
             continue
 
         for account in new_accounts:
-            new_postings = group_postings(new_postings, account, config.meta_name)
+            new_postings = merge_postings(account, new_postings, config.meta_name)
 
         new_entries.append(
             tx_clean._replace(
@@ -446,35 +447,3 @@ def share(
             new_entries.append(open_entry)
 
     return new_entries, errors
-
-
-def group_postings(
-    postings: List[Posting], account: Account, meta_name: Union[str, None]
-) -> List[Posting]:
-    grouped_postings = []
-    share_postings = []
-    share_balance = Inventory()
-    meta = dict()
-    for posting in postings:
-        if posting.account == account:
-            share_postings.append(posting)
-            share_balance.add_position(posting)
-            if len(meta) == 0:
-                meta = posting.meta
-            elif meta_name is not None:
-                for mark in metaset.get(posting.meta, meta_name):
-                    share_postings[0] = share_postings[0]._replace(
-                        meta=metaset.add(share_postings[0].meta, meta_name, mark)
-                    )
-        else:
-            grouped_postings.append(posting)
-
-    if share_postings:
-        for pos in share_balance:
-            grouped_postings.append(
-                Posting(
-                    account, pos.units, pos.cost, None, None, share_postings[0].meta
-                )
-            )
-
-    return grouped_postings
