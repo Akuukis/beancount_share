@@ -42,24 +42,27 @@ class Config(NamedTuple):
     open_date: Union[date, None] = date.fromisoformat("1970-01-01")
 
 
-PluginShareParseError = namedtuple("LoadError", "source message entry")
+PluginShareError = namedtuple("PluginShareError", "source message entry")
 
 
 new_accounts: Set[Account] = set()
 
 
-def share(
-    entries: Entries, unused_options_map, config_string="{}"
-) -> Tuple[Entries, List[Exception]]:
+def share(entries: Entries, unused_options_map, config_string="{}") -> Tuple[Entries, List[NamedTuple]]:
     new_entries: Entries = []
-    errors: List[PluginShareParseError] = []
+    errors: List[NamedTuple] = []
 
     # 1. Parse config
-    with plugin_error_handler(entries, new_entries, errors, "share", PluginShareParseError):
+    with plugin_error_handler(entries, new_entries, errors, "share", PluginShareError):
         config = load_config(config_string)
 
         new_entries[:], errors[:] = marked.on_marked_transactions(
-            per_marked_transaction, entries, config, config.mark_name, ("Income", "Expenses"), PluginShareParseError
+            per_marked_transaction,
+            entries,
+            config,
+            config.mark_name,
+            ("Income", "Expenses"),
+            PluginShareError,
         )
 
         if config.open_date != None:
@@ -91,6 +94,7 @@ def load_config(config_string: str) -> Config:
     # 3. Create config itself. Just copy/paste this block. Done!
     return Config(**config_dict)
 
+
 def per_marked_transaction(tx: Transaction, tx_orig: Transaction, config: Config) -> List[Transaction]:
     account_prefix: str
     total_income = sum_income(tx)
@@ -113,7 +117,7 @@ def per_marked_transaction(tx: Transaction, tx_orig: Transaction, config: Config
     # 4. Per posting, split it up based on marks.
     new_postings = []
     for posting in tx.postings:
-        with posting_error_handler(tx_orig, posting, PluginShareParseError):
+        with posting_error_handler(tx_orig, posting, PluginShareError):
             new_postings.extend(per_marked_posting(posting, config, account_prefix, total_value))
 
     for account in new_accounts:

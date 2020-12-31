@@ -125,7 +125,7 @@ def not_error(errors):
 def config_error(input_txns, errors, exception_text):
     original_txn = input_txns[-1]
     assert len(errors) == 1
-    expected_error = share.PluginShareParseError(original_txn.meta, exception_text.strip('\n'), original_txn)
+    expected_error = share.PluginShareError(original_txn.meta, exception_text.strip('\n'), original_txn)
     assert type(errors[0]) is type(expected_error)
     assert errors[0].message == expected_error.message
     assert errors[0].entry == None
@@ -135,7 +135,7 @@ def config_error(input_txns, errors, exception_text):
 def plugin_error(input_txns, errors, exception_text):
     original_txn = input_txns[-1]
     assert len(errors) == 1
-    expected_error = share.PluginShareParseError(original_txn.meta, exception_text.strip('\n'), original_txn)
+    expected_error = share.PluginShareError(original_txn.meta, exception_text.strip('\n'), original_txn)
     assert type(errors[0]) is type(expected_error)
     assert errors[0].message == expected_error.message
     assert strip_flaky_meta(errors[0].entry) == strip_flaky_meta(expected_error.entry)
@@ -156,5 +156,5 @@ def beancount_error(input_txns, errors, exception_text, output_txns):
     original_txn = input_txns[-1]
     modified_txn = output_txns[-1]
     assert len(errors) == 1
-    expected_error = share.PluginShareParseError(original_txn.meta, exception_text.strip('\n'), original_txn)
+    expected_error = share.PluginShareError(original_txn.meta, exception_text.strip('\n'), original_txn)
     assert errors[0].message == expected_error.message and errors[0].entry == modified_txn
