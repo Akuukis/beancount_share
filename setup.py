@@ -23,6 +23,6 @@ setup(
     package_data={'beancount_share': ['../README.md']},
     package_dir={'beancount_share': 'beancount_share'},
     packages=['beancount_share'],
-    requires=['beancount (>2.0)'],
+    requires=['beancount (>2.0)', 'beancount_plugin_utils'],
     url='https://github.com/Akuukis/beancount_share',
 )
