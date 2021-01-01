@@ -48,7 +48,7 @@ Setup
 Add the plugin like this:
 
 ```
-plugin "beancount_share" "{}"
+plugin "beancount_share.share" "{}"
 ```
 
 Done. If you want to use custom configuration (read below), then you put it inside those `{}` brackets.
@@ -333,7 +333,7 @@ Note: **Do NOT use double-quotes within the configuration!** The configuration i
 This is the default configuration in full. Providing it equals to providing no configuration at all.
 
 ```
-plugin "beancount_share" "{
+plugin "beancount_share.share" "{
     'mark_name': 'share',
     'meta_name': 'shared',
     'account_debtors': 'Assets:Debtors',
@@ -347,7 +347,7 @@ Note that `meta_name` and `open_date` may also be set to `None` - former to disa
 
 
 ```
-plugin "beancount_share" "{
+plugin "beancount_share.share" "{
     'mark_name': 'share',
     'meta_name': None,
     'account_debtors': 'Assets:Debtors',
