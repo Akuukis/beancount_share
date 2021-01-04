@@ -20,9 +20,9 @@ setup(
     author_email='akuukis@kalvis.lv',
     download_url='https://pypi.python.org/pypi/beancount_share',
     license='GNU AGPLv3',
-    package_data={'beancount_share': ['../README.md']},
+    package_data={'beancount_share': ['../README.md', 'requirements.txt']},
     package_dir={'beancount_share': 'beancount_share'},
     packages=['beancount_share'],
-    requires=['beancount (>2.0)', 'beancount_plugin_utils (>0.0.2)'],
+    install_requires=['beancount >= 2.0', 'beancount_plugin_utils >= 0.0.2'],
     url='https://github.com/Akuukis/beancount_share',
 )
