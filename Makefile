@@ -1,5 +1,5 @@
 install:
-	pip3 install -r requirements.txt
+	pip3 install -r requirements.txt --upgrade
 
 lint:
 	black  beancount_share/
