@@ -7,7 +7,7 @@ Share
 [![License](https://img.shields.io/pypi/l/beancount_share)](https://choosealicense.com/licenses/agpl-3.0/)
 [![Linting](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-A beancount plugin to share expenses among multiple partners within one ledger.
+A beancount plugin to share expenses with external parties.
 
 `#share` plugin uses tag syntax to add info to the transaction:
 - basic: share expense with another partner 50%-50% - simply use `#share-Bob`
