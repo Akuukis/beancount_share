@@ -11,7 +11,7 @@ from collections import namedtuple
 
 from beancount.core.inventory import Inventory
 from beancount.core.number import D, Decimal, ONE
-from beancount.core.amount import Amount
+from beancount.core.amount import Amount, sub
 from beancount.core.data import (
     Account,
     Entries,
@@ -107,16 +107,14 @@ def per_marked_transaction(tx: Transaction, tx_orig: Transaction, config: Config
     total_expenses = sum_expenses(tx)
     total_value: Amount
 
-    if not total_expenses.is_empty() and total_income.is_empty():
+    total_income_value = total_income.get_currency_units(tx.postings[0].units.currency)
+    total_expenses_value = total_expenses.get_currency_units(tx.postings[0].units.currency)
+    if total_income_value < total_expenses_value:
         account_prefix = config.account_debtors + ":"
-        total_value = total_expenses.get_currency_units(tx.postings[0].units.currency)
-    elif total_expenses.is_empty() and not total_income.is_empty():
-        account_prefix = config.account_creditors + ":"
-        total_value = total_income.get_currency_units(tx.postings[0].units.currency)
+        total_value = sub(total_expenses_value, total_income_value)
     else:
-        raise RuntimeError(
-            'Plugin "share" doesn\'t work on transactions that has both income and expense: please split it up into two transactions instead.'
-        )
+        account_prefix = config.account_creditors + ":"
+        total_value = sub(total_income_value, total_expenses_value)
 
     # 4. Per posting, split it up based on marks.
     new_postings = []
