@@ -26,6 +26,14 @@ def config():
     return ""
 
 @fixture
+def input_txns():
+    """
+    Returns:
+      A reference to an empty list.
+    """
+    return list()
+
+@fixture
 def output_txns():
     """
     A fixture used by the when and then steps.
@@ -50,21 +58,25 @@ def config_custom(config):
 def setup_txns(setup_txns_text):
     return setup_txns_text
 
-@given(parsers.parse('the following beancount transaction:'
-                     '{input_txn_text}'))
-def input_txns(input_txn_text):
-    input_txns, _, _ = load_string(input_txn_text)
-    assert len(input_txns) == 1  # Only one entry in feature file example
-    return input_txns
-
 
 @when(parsers.parse('this transaction is processed:'
                     '{input_txn_text}'))
 def is_processed(input_txns, errors, config, input_txn_text, setup_txns_text, output_txns):
-    text = 'plugin "beancount_share.share" "' + config.strip('\n') + '"\n' + setup_txns_text + input_txn_text
-    print('\nInput (full & raw):\n------------------------------------------------\n' + text + '\n')
-    output_txns[:], errors[:], _ = load_string(text)
-    print('\nOutput (Transactions):\n------------------------------------------------\n')
+    vanilla_text = setup_txns_text + input_txn_text
+    plugin_text  = 'plugin "beancount_share.share" "' + config.strip('\n') + '"\n' + setup_txns_text + input_txn_text
+    print('\nInput (full & raw):\n------------------------------------------------\n' + plugin_text + '\n')
+
+    input_txns[:], errors[:], _ = load_string(vanilla_text)
+    print('\nOutput (Transactions without using plugin):\n------------------------------------------------\n')
+    for txn in input_txns:
+        print(printer.format_entry(txn))
+    for error in errors:
+        print(printer.format_error(error))
+    if len(errors) > 0:
+        raise Exception('Ledger without plugin already has errors.')
+
+    output_txns[:], errors[:], _ = load_string(plugin_text)
+    print('\nOutput (Transactions using plugin):\n------------------------------------------------\n')
     for txn in output_txns:
         print(printer.format_entry(txn))
     print('\nOutput (Errors):\n------------------------------------------------\n')
