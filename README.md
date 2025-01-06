@@ -116,7 +116,7 @@ You should tag the expense with his name + the sum he owes you: `#share-Bob-7`.
 
 The amount share tag splits transaction into 2 transactions where your debtors' part is the amount specified and yours - all the rest.
 
-
+Note: For Income use `#share-Bob--7`, note the `-7`.
 
 
 How to use
@@ -321,6 +321,18 @@ The amount will be spilt by these rules in this order:
     Assets:Debtors:David      1.80 EUR
         shared: "Expenses:Food:Drinks (25%, 1.50 EUR)"
 ```
+
+
+
+
+
+
+
+
+Other Usage Notes
+===============================================================================
+
+- Income is shared as well
 
 
 

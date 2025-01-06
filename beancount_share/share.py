@@ -142,7 +142,7 @@ def per_marked_posting(posting: Posting, config: Config, account_prefix: str, to
     todo_percent: List[Tuple[float, str]] = list()
     todo_absent: List[str] = list()
     for mark in marks:
-        parts = mark.split("-")
+        parts = [part.replace('$$$', '-') for part in mark.replace('--', '-$$$').split("-")]
         account: str
 
         # 5.1. Apply defaults.
