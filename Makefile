@@ -1,5 +1,7 @@
 install:
-	pip3 install -r requirements.txt --upgrade
+	python3 -m venv .venv
+	. .venv/bin/activate; pip3 install -r requirements.txt --upgrade
+	printf '\nrun:\n    source .venv/bin/activate\n\n'
 
 lint:
 	black  beancount_share/

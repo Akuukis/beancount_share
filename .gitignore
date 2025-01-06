@@ -6,3 +6,5 @@ MANIFEST
 *.pyc
 cov.xml
 .coverage
+
+.venv/

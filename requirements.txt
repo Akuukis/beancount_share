@@ -4,3 +4,5 @@ pytest-bdd
 pytest-cov
 twine
 black
+setuptools
+wheel
